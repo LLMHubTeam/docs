@@ -21,8 +21,8 @@ client = OpenAI(
 
 completion = client.chat.completions.create(
   extra_headers={
-    "HTTP-Referer": "<YOUR_SITE_URL>", # 可选. Site URL for rankings on openrouter.ai.
-    "X-Title": "<YOUR_SITE_NAME>", # 可选. Site title for rankings on openrouter.ai.
+    "HTTP-Referer": "<YOUR_SITE_URL>", # 可选
+    "X-Title": "<YOUR_SITE_NAME>", # 可选
   },
   model="openai/gpt-4o",
   messages=[
@@ -44,8 +44,8 @@ const openai = new OpenAI({
   baseURL: 'https://api.llmhub.com.cn/api/v1',
   apiKey: '<LLMHub_API_KEY>',
   defaultHeaders: {
-    'HTTP-Referer': '<YOUR_SITE_URL>', // Optional. Site URL for rankings on openrouter.ai.
-    'X-Title': '<YOUR_SITE_NAME>', // Optional. Site title for rankings on openrouter.ai.
+    'HTTP-Referer': '<YOUR_SITE_URL>', // 可选
+    'X-Title': '<YOUR_SITE_NAME>', // 可选
   },
 });
 
@@ -105,8 +105,8 @@ fetch('https://api.llmhub.com.cn/api/v1/chat/completions', {
   method: 'POST',
   headers: {
     Authorization: 'Bearer <LLMHub_API_KEY>',
-    'HTTP-Referer': '<YOUR_SITE_URL>', // Optional. Site URL for rankings on openrouter.ai.
-    'X-Title': '<YOUR_SITE_NAME>', // Optional. Site title for rankings on openrouter.ai.
+    'HTTP-Referer': '<YOUR_SITE_URL>', // 可选
+    'X-Title': '<YOUR_SITE_NAME>', // 可选
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
