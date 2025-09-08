@@ -14,7 +14,7 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Overview",
+            "group": "概述",
             "pages": [
               "index",
               "quickstart",
