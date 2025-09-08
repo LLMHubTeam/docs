@@ -1,50 +1,36 @@
 ---
 title: "常见问题"
-description: "Find answers to commonly asked questions about OpenRouter's unified API, model access, pricing, and integration."
+description: "查找有关 OpenRouter 的统一 API、模型访问、定价和集成的常见问题的答案。"
 ---
 
-## Getting started
+## 入门
 
 <AccordionGroup>
-  <Accordion title="Why should I use OpenRouter?">
-    OpenRouter provides a unified API to access all the major LLM models on the
-    market. It also allows users to aggregate their billing in one place and
-    keep track of all of their usage using our analytics.
+  <Accordion title="我为什么要使用 OpenRouter？">
+    OpenRouter 提供统一的 API，可访问市场上所有主流的 LLM 模型。它还允许用户将账单汇总到一处，并使用我们的分析功能跟踪所有使用情况。
 
-    OpenRouter passes through the pricing of the underlying providers, while pooling their uptime,
-    so you get the same pricing you'd get from the provider directly, with a
-    unified API and fallbacks so that you get much better uptime.
+    OpenRouter 会将底层提供商的定价传递给用户，同时整合他们的正常运行时间，因此，您可以获得与直接从提供商处获得的相同的定价，同时拥有统一的 API 和回退机制，从而获得更好的正常运行时间。
+
   </Accordion>
-  <Accordion title="How do I get started with OpenRouter?">
-    To get started, create an account and add credits on the
-    [Credits](https://openrouter.ai/settings/credits) page. Credits are simply
-    deposits on OpenRouter that you use for LLM inference.
-    When you use the API or chat interface, we deduct the request cost from your
-    credits. Each model and provider has a different price per million tokens.
+  <Accordion title="如何开始使用 OpenRouter？">
+    首先，请创建一个帐户并在
+    [账户](https://www.llmhub.com.cn/console/topup)页面添加积分。积分只是您在 OpenRouter 上用于 LLM 推理的存款。当您使用 API 或聊天界面时，我们会从您的积分中扣除请求费用。每个模型和提供商每百万代币的价格都不同。
 
-    Once you have credits you can either use the chat room, or create API keys
-    and start using the API. You can read our [quickstart](/docs/quickstart)
-    guide for code samples and more.
+      获得积分后，您可以使用聊天室，也可以创建 API 密钥并开始使用 API。您可以阅读我们的[快速入门](/docs/quickstart)指南，了解代码示例及更多信息。
   </Accordion>
-  <Accordion title="How do I get support?">
-    The best way to get support is to join our
-    [Discord](https://discord.gg/fVyRaUDgxW) and ping us in the #help forum.
+  <Accordion title="我如何获得支持？">
+      获得支持的最佳方式是加入我们的[Discord](https://discord.gg/fVyRaUDgxW)并在 #help 论坛中向我们发送消息。
   </Accordion>
-  <Accordion title="How do I get billed for my usage on OpenRouter?">
-    For each model we have the pricing displayed per million tokens. There is
-    usually a different price for prompt and completion tokens. There are also
-    models that charge per request, for images and for reasoning tokens. All of
-    these details will be visible on the models page.
+  <Accordion title="我如何支付 OpenRouter 的使用费用？">
+    对于每个模型，我们都会显示每百万个令牌的定价。提示令牌和完成令牌的价格通常不同。也有一些模型按请求、图像和推理令牌收费。所有这些详细信息都将显示在模型页面上。
 
-    When you make a request to OpenRouter, we receive the total number of tokens processed
-    by the provider. We then calculate the corresponding cost and deduct it from your credits.
-    You can review your complete usage history in the [Activity tab](https://openrouter.ai/activity).
+      当您向 OpenRouter 发出请求时，我们会收到提供商处理的令牌总数。然后，我们会计算相应的费用并从您的积分中扣除。
+      您可以在[活动选项卡](https://www.llmhub.com.cn/console/log)中查看完整的使用历史记录。
 
-    You can also add the `usage: {include: true}` parameter to your chat request
-    to get the usage information in the response.
+      您还可以在聊天请求中添加 `usage: {include: true}` 参数，以便在响应中获取使用信息。
 
-    We pass through the pricing of the underlying providers; there is no markup
-    on inference pricing (however we do charge a [fee](/docs/faq#pricing-and-fees) when purchasing credits).
+      我们通过底层供应商的定价；没有加价
+      推理定价（但是我们在购买积分时会收取[费用](/docs/faq#pricing-and-fees)）。
   </Accordion>
 </AccordionGroup>
 
