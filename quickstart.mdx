@@ -5,7 +5,7 @@ description: "开始使用 LLM Hub 统一的 API 来支持数百个 AI 模型。
 
 LLM Hub 提供统一的 API，让您可以通过单个端点访问数百个 AI 模型，同时自动处理回退并选择最具成本效益的选项。只需几行代码，使用您首选的 SDK 或框架即可开始使用。
 
-在以下示例中，LLM Hub 特定的标头是可选的。设置这些标头可让您的应用出现在 OpenRouter 排行榜上。有关应用归因的详细信息，请参阅我们的 [App 应用指南](/docs/features/app-attribution).
+在以下示例中，LLM Hub 特定的标头是可选的。设置这些标头可让您的应用出现在 OpenRouter 排行榜上。有关应用归因的详细信息，请参阅我们的[App 应用指南](/docs/features/app-attribution).
 
 ## 使用 OpenAI SDK
 
@@ -15,8 +15,8 @@ LLM Hub 提供统一的 API，让您可以通过单个端点访问数百个 AI �
 from openai import OpenAI
 
 client = OpenAI(
-  base_url="https://openrouter.ai/api/v1",
-  api_key="<OPENROUTER_API_KEY>",
+  base_url="https://api.llmhub.com.cn/api/v1",
+  api_key="<LLMHub_API_KEY>",
 )
 
 completion = client.chat.completions.create(
@@ -41,8 +41,8 @@ print(completion.choices[0].message.content)
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: '<OPENROUTER_API_KEY>',
+  baseURL: 'https://api.llmhub.com.cn/api/v1',
+  apiKey: '<LLMHub_API_KEY>',
   defaultHeaders: {
     'HTTP-Referer': '<YOUR_SITE_URL>', // Optional. Site URL for rankings on openrouter.ai.
     'X-Title': '<YOUR_SITE_NAME>', // Optional. Site title for rankings on openrouter.ai.
@@ -71,7 +71,7 @@ main();
 ## 直接使用 LLM Hub API
 
 <Tip>
-  您可以使用交互式 [请求生成器](/request-builder) 以您选择的语言生成 LLM Hub API 请求。
+  您可以使用交互式[请求生成器](/request-builder)以您选择的语言生成 LLM Hub API 请求。
 </Tip>
 
 <CodeGroup>
@@ -101,10 +101,10 @@ response = requests.post(
 
 
 ```typescript TypeScript
-fetch('https://openrouter.ai/api/v1/chat/completions', {
+fetch('https://api.llmhub.com.cn/api/v1/chat/completions', {
   method: 'POST',
   headers: {
-    Authorization: 'Bearer <OPENROUTER_API_KEY>',
+    Authorization: 'Bearer <LLMHub_API_KEY>',
     'HTTP-Referer': '<YOUR_SITE_URL>', // Optional. Site URL for rankings on openrouter.ai.
     'X-Title': '<YOUR_SITE_NAME>', // Optional. Site title for rankings on openrouter.ai.
     'Content-Type': 'application/json',
@@ -123,9 +123,9 @@ fetch('https://openrouter.ai/api/v1/chat/completions', {
 
 
 ```shell Shell
-curl https://openrouter.ai/api/v1/chat/completions \
+curl https://api.llmhub.com.cn/api/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $OPENROUTER_API_KEY" \
+  -H "Authorization: Bearer $LLMHub_API_KEY" \
   -d '{
   "model": "openai/gpt-4o",
   "messages": [
@@ -143,4 +143,4 @@ API 还支持 [streaming](/docs/api-reference/streaming).
 
 ## 使用第三方 SDK
 
-有关使用第三方 SDK 和框架与 LLM Hub 的信息，请 [请参阅我们的框架文档。](/docs/community/frameworks-overview)
+有关使用第三方 SDK 和框架与 LLM Hub 的信息，请[请参阅我们的框架文档。](/docs/community/frameworks-overview)
