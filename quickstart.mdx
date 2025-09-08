@@ -21,8 +21,8 @@ client = OpenAI(
 
 completion = client.chat.completions.create(
   extra_headers={
-    "HTTP-Referer": "<YOUR_SITE_URL>", # Optional. Site URL for rankings on openrouter.ai.
-    "X-Title": "<YOUR_SITE_NAME>", # Optional. Site title for rankings on openrouter.ai.
+    "HTTP-Referer": "<YOUR_SITE_URL>", # 可选. Site URL for rankings on openrouter.ai.
+    "X-Title": "<YOUR_SITE_NAME>", # 可选. Site title for rankings on openrouter.ai.
   },
   model="openai/gpt-4o",
   messages=[
@@ -81,14 +81,14 @@ import requests
 import json
 
 response = requests.post(
-  url="https://openrouter.ai/api/v1/chat/completions",
+  url="https://api.llmhub.com.cn/api/v1/chat/completions",
   headers={
-    "Authorization": "Bearer <OPENROUTER_API_KEY>",
-    "HTTP-Referer": "<YOUR_SITE_URL>", # Optional. Site URL for rankings on openrouter.ai.
-    "X-Title": "<YOUR_SITE_NAME>", # Optional. Site title for rankings on openrouter.ai.
+    "Authorization": "Bearer <LLMHub_API_KEY>",
+    "HTTP-Referer": "<YOUR_SITE_URL>", # 可选
+    "X-Title": "<YOUR_SITE_NAME>", # 可选
   },
   data=json.dumps({
-    "model": "openai/gpt-4o", # Optional
+    "model": "openai/gpt-4o", # 可选
     "messages": [
       {
         "role": "user",
