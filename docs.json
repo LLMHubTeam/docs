@@ -11,7 +11,7 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "用户指南",
         "groups": [
           {
             "group": "概述",
@@ -25,13 +25,35 @@
           },
           {
             "group": "API 参考",
+            "icon": "code",
             "pages": [
-              "essentials/overview",
-              "essentials/navigation"
+              "api-reference/overview",
+              "api-reference/streaming",
+              "api-reference/limits",
+              "api-reference/authentication",
+              "api-reference/parameters",
+              "api-reference/errors",
+              "api-reference/completion",
+              "api-reference/chat-completion",
+              "api-reference/get-a-generation",
+              "api-reference/list-available-models",
+              "api-reference/list-endpoints-for-a-model",
+              "api-reference/list-models-filtered-by-user-provider-preferences",
+              "api-reference/list-available-providers",
+              "api-reference/get-credits",
+              "api-reference/create-a-coinbase-charge",
+              "api-reference/analytics/get-activity",
+              "api-reference/authentication/exchange-authorization-code-for-api-key",
+              "api-reference/api-keys/get-current-api-key",
+              "api-reference/api-keys/list-api-keys",
+              "api-reference/api-keys/create-api-key",
+              "api-reference/api-keys/get-api-key",
+              "api-reference/api-keys/delete-api-key",
+              "api-reference/api-keys/update-api-key"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "平台管理",
             "pages": [
               "essentials/markdown",
               "essentials/code",
@@ -40,31 +62,21 @@
             ]
           },
           {
-            "group": "AI tools",
+            "group": "隐私和条款",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "terms-and-privacy/terms",
+              "terms-and-privacy/privacy"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "开发工具",
         "groups": [
           {
             "group": "API documentation",
             "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "development-tools/claude-code"
             ]
           }
         ]
