@@ -1,19 +1,19 @@
 ---
 title: "模型"
-description: "Access all major language models (LLMs) through OpenRouter's unified API. Browse available models, compare capabilities, and integrate with your preferred provider."
+description: "通过 OpenRouter 的统一 API 访问所有主流语言模型 (LLM)。浏览可用的模型，比较功能，并与您首选的提供商集成。"
 ---
 
-Explore and browse 400\+ models and providers [on our website](/models), or [with our API](/docs/api-reference/list-available-models) (including RSS).
+在我们的网站 (/models) 上或使用我们的 API (/docs/api-reference/list-available-models)（包括 RSS）探索和浏览 400 多个模型和提供商。
 
-## Models API Standard
+## 模型 API 标准
 
-Our [Models API](/docs/api-reference/list-available-models) makes the most important information about all LLMs freely available as soon as we confirm it.
+我们的 [模型 API](/docs/api-reference/list-available-models) 会在确认后立即免费提供所有 LLM 的最重要信息。
 
-### API Response Schema
+### API 响应架构
 
-The Models API returns a standardized JSON response format that provides comprehensive metadata for each available model. This schema is cached at the edge and designed for reliable integration for production applications.
+模型 API 返回标准化的 JSON 响应格式，其中包含每个可用模型的全面元数据。此架构缓存在边缘设备上，旨在实现与生产应用程序的可靠集成。
 
-#### Root Response Object
+#### Root 响应对象
 
 ```json
 {
@@ -23,9 +23,9 @@ The Models API returns a standardized JSON response format that provides compreh
 }
 ```
 
-#### Model Object Schema
+#### 模型对象模式
 
-Each model in the `data` array contains the following standardized fields:
+`data` 数组中的每个模型包含以下标准化字段：
 
 | Field                  | Type                                          | Description                                                                            |
 | ---------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -98,12 +98,12 @@ The `supported_parameters` array indicates which OpenAI-compatible parameters wo
 - `seed` - Deterministic outputs
 
 <Note>
-  Some models break up text into chunks of multiple characters (GPT, Claude,
-  Llama, etc), while others tokenize by character (PaLM). This means that token
-  counts (and therefore costs) will vary between models, even when inputs and
-  outputs are the same. Costs are displayed and billed according to the
-  tokenizer for the model in use. You can use the `usage` field in the response
-  to get the token counts for the input and output.
+    Some models break up text into chunks of multiple characters (GPT, Claude,
+    Llama, etc), while others tokenize by character (PaLM). This means that token
+    counts (and therefore costs) will vary between models, even when inputs and
+    outputs are the same. Costs are displayed and billed according to the
+    tokenizer for the model in use. You can use the `usage` field in the response
+    to get the token counts for the input and output.
 </Note>
 
 If there are models or providers you are interested in that OpenRouter doesn't have, please tell us about them in our [Discord channel](https://openrouter.ai/discord).
