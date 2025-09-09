@@ -11,131 +11,131 @@ LLM Hub 提供统一的 API，让您可以通过单个端点访问数百个 AI �
 
 <CodeGroup>
 
-```python Python
-from openai import OpenAI
+    ```python Python
+    from openai import OpenAI
 
-client = OpenAI(
-  base_url="https://api.llmhub.com.cn/api/v1",
-  api_key="<LLMHub_API_KEY>",
-)
+    client = OpenAI(
+    base_url="https://api.llmhub.com.cn/api/v1",
+    api_key="<LLMHub_API_KEY>",
+    )
 
-completion = client.chat.completions.create(
-  extra_headers={
-    "HTTP-Referer": "<YOUR_SITE_URL>", # 可选
-    "X-Title": "<YOUR_SITE_NAME>", # 可选
-  },
-  model="openai/gpt-4o",
-  messages=[
+    completion = client.chat.completions.create(
+    extra_headers={
+        "HTTP-Referer": "<YOUR_SITE_URL>", # 可选
+        "X-Title": "<YOUR_SITE_NAME>", # 可选
+    },
+    model="openai/gpt-4o",
+    messages=[
     {
-      "role": "user",
-      "content": "What is the meaning of life?"
+        "role": "user",
+        "content": "What is the meaning of life?"
     }
-  ]
-)
+    ]
+    )
 
-print(completion.choices[0].message.content)
-```
+    print(completion.choices[0].message.content)
+    ```
 
 
-```typescript TypeScript
-import OpenAI from 'openai';
+    ```typescript TypeScript
+    import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  baseURL: 'https://api.llmhub.com.cn/api/v1',
-  apiKey: '<LLMHub_API_KEY>',
-  defaultHeaders: {
-    'HTTP-Referer': '<YOUR_SITE_URL>', // 可选
-    'X-Title': '<YOUR_SITE_NAME>', // 可选
-  },
-});
+    const openai = new OpenAI({
+        baseURL: 'https://api.llmhub.com.cn/api/v1',
+        apiKey: '<LLMHub_API_KEY>',
+        defaultHeaders: {
+        'HTTP-Referer': '<YOUR_SITE_URL>', // 可选
+        'X-Title': '<YOUR_SITE_NAME>', // 可选
+    },
+    });
 
-async function main() {
-  const completion = await openai.chat.completions.create({
-    model: 'openai/gpt-4o',
-    messages: [
-      {
+    async function main() {
+        const completion = await openai.chat.completions.create({
+        model: 'openai/gpt-4o',
+        messages: [
+    {
         role: 'user',
         content: 'What is the meaning of life?',
-      },
-    ],
-  });
+    },
+        ],
+    });
 
-  console.log(completion.choices[0].message);
-}
+        console.log(completion.choices[0].message);
+    }
 
-main();
-```
+    main();
+    ```
 
 </CodeGroup>
 
 ## 直接使用 LLM Hub API
 
 <Tip>
-  您可以使用交互式[请求生成器](/request-builder)以您选择的语言生成 LLM Hub API 请求。
+    您可以使用交互式[请求生成器](/request-builder)以您选择的语言生成 LLM Hub API 请求。
 </Tip>
 
 <CodeGroup>
 
-```python Python
-import requests
-import json
+    ```python Python
+    import requests
+    import json
 
-response = requests.post(
-  url="https://api.llmhub.com.cn/api/v1/chat/completions",
-  headers={
+    response = requests.post(
+    url="https://api.llmhub.com.cn/api/v1/chat/completions",
+    headers={
     "Authorization": "Bearer <LLMHub_API_KEY>",
     "HTTP-Referer": "<YOUR_SITE_URL>", # 可选
     "X-Title": "<YOUR_SITE_NAME>", # 可选
-  },
-  data=json.dumps({
+},
+    data=json.dumps({
     "model": "openai/gpt-4o", # 可选
     "messages": [
-      {
-        "role": "user",
-        "content": "What is the meaning of life?"
-      }
+{
+    "role": "user",
+    "content": "What is the meaning of life?"
+}
     ]
-  })
-)
-```
+})
+    )
+    ```
 
 
-```typescript TypeScript
-fetch('https://api.llmhub.com.cn/api/v1/chat/completions', {
-  method: 'POST',
-  headers: {
+    ```typescript TypeScript
+    fetch('https://api.llmhub.com.cn/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
     Authorization: 'Bearer <LLMHub_API_KEY>',
     'HTTP-Referer': '<YOUR_SITE_URL>', // 可选
     'X-Title': '<YOUR_SITE_NAME>', // 可选
     'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
+},
+    body: JSON.stringify({
     model: 'openai/gpt-4o',
     messages: [
-      {
-        role: 'user',
-        content: 'What is the meaning of life?',
-      },
+{
+    role: 'user',
+    content: 'What is the meaning of life?',
+},
     ],
-  }),
+}),
 });
-```
+    ```
 
 
-```shell Shell
-curl https://api.llmhub.com.cn/api/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $LLMHub_API_KEY" \
-  -d '{
-  "model": "openai/gpt-4o",
-  "messages": [
-    {
-      "role": "user",
-      "content": "What is the meaning of life?"
-    }
-  ]
+    ```shell Shell
+    curl https://api.llmhub.com.cn/api/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $LLMHub_API_KEY" \
+    -d '{
+    "model": "openai/gpt-4o",
+    "messages": [
+{
+    "role": "user",
+    "content": "What is the meaning of life?"
+}
+    ]
 }'
-```
+    ```
 
 </CodeGroup>
 

@@ -6,141 +6,126 @@ description: "查找有关 OpenRouter 的统一 API、模型访问、定价和�
 ## 入门
 
 <AccordionGroup>
-  <Accordion title="我为什么要使用 OpenRouter？">
-    OpenRouter 提供统一的 API，可访问市场上所有主流的 LLM 模型。它还允许用户将账单汇总到一处，并使用我们的分析功能跟踪所有使用情况。
+    <Accordion title="我为什么要使用 OpenRouter？">
+        OpenRouter 提供统一的 API，可访问市场上所有主流的 LLM 模型。它还允许用户将账单汇总到一处，并使用我们的分析功能跟踪所有使用情况。
 
-    OpenRouter 会将底层提供商的定价传递给用户，同时整合他们的正常运行时间，因此，您可以获得与直接从提供商处获得的相同的定价，同时拥有统一的 API 和回退机制，从而获得更好的正常运行时间。
+        OpenRouter 会将底层提供商的定价传递给用户，同时整合他们的正常运行时间，因此，您可以获得与直接从提供商处获得的相同的定价，同时拥有统一的
+        API 和回退机制，从而获得更好的正常运行时间。
 
-  </Accordion>
-  <Accordion title="如何开始使用 OpenRouter？">
-    首先，请创建一个帐户并在
-    [账户](https://www.llmhub.com.cn/console/topup)页面添加积分。积分只是您在 OpenRouter 上用于 LLM 推理的存款。当您使用 API 或聊天界面时，我们会从您的积分中扣除请求费用。每个模型和提供商每百万代币的价格都不同。
+    </Accordion>
+    <Accordion title="如何开始使用 OpenRouter？">
+        首先，请创建一个帐户并在
+        [账户](https://www.llmhub.com.cn/console/topup)页面添加积分。积分只是您在 OpenRouter 上用于 LLM 推理的存款。当您使用
+        API 或聊天界面时，我们会从您的积分中扣除请求费用。每个模型和提供商每百万代币的价格都不同。
 
-      获得积分后，您可以使用聊天室，也可以创建 API 密钥并开始使用 API。您可以阅读我们的[快速入门](/docs/quickstart)指南，了解代码示例及更多信息。
-  </Accordion>
-  <Accordion title="我如何获得支持？">
-      获得支持的最佳方式是加入我们的[Discord](https://discord.gg/fVyRaUDgxW)并在 #help 论坛中向我们发送消息。
-  </Accordion>
-  <Accordion title="我如何支付 OpenRouter 的使用费用？">
-    对于每个模型，我们都会显示每百万个令牌的定价。提示令牌和完成令牌的价格通常不同。也有一些模型按请求、图像和推理令牌收费。所有这些详细信息都将显示在模型页面上。
+        获得积分后，您可以使用聊天室，也可以创建 API 密钥并开始使用 API。您可以阅读我们的[快速入门](/docs/quickstart)指南，了解代码示例及更多信息。
+    </Accordion>
+    <Accordion title="我如何获得支持？">
+        获得支持的最佳方式是加入我们的[Discord](https://discord.gg/fVyRaUDgxW)并在 #help 论坛中向我们发送消息。
+    </Accordion>
+    <Accordion title="我如何支付 OpenRouter 的使用费用？">
+        对于每个模型，我们都会显示每百万个令牌的定价。提示令牌和完成令牌的价格通常不同。也有一些模型按请求、图像和推理令牌收费。所有这些详细信息都将显示在模型页面上。
 
-      当您向 OpenRouter 发出请求时，我们会收到提供商处理的令牌总数。然后，我们会计算相应的费用并从您的积分中扣除。
-      您可以在[活动选项卡](https://www.llmhub.com.cn/console/log)中查看完整的使用历史记录。
+        当您向 OpenRouter 发出请求时，我们会收到提供商处理的令牌总数。然后，我们会计算相应的费用并从您的积分中扣除。
+        您可以在[活动选项卡](https://www.llmhub.com.cn/console/log)中查看完整的使用历史记录。
 
-      您还可以在聊天请求中添加 `usage: {include: true}` 参数，以便在响应中获取使用信息。
+        您还可以在聊天请求中添加 `usage: {include: true}` 参数，以便在响应中获取使用信息。
 
-      我们通过底层供应商的定价；没有加价
-      推理定价（但是我们在购买积分时会收取[费用](/docs/faq#pricing-and-fees)）。
-  </Accordion>
+        我们通过底层供应商的定价；没有加价
+        推理定价（但是我们在购买积分时会收取[费用](/docs/faq#pricing-and-fees)）。
+    </Accordion>
 </AccordionGroup>
 
-## Pricing and Fees
+## 定价和费用
 
 <AccordionGroup>
-  <Accordion title="What are the fees for using OpenRouter?">
-    OpenRouter charges a getTotalFeeString('stripe') fee when you purchase credits. We pass through
-    the pricing of the underlying model providers without any markup, so you pay
-    the same rate as you would directly with the provider.
+    <Accordion title="使用 OpenRouter 的费用是多少？">
+        当您购买积分时，OpenRouter 会收取 getTotalFeeString('stripe') 费用。我们会直接转嫁底层模型提供商的定价，不加价，因此您支付的费用与直接向提供商支付的费用相同。
 
-    Crypto payments are charged a fee of getTotalFeeString('coinbase').
-  </Accordion>
-  <Accordion title="Is there a fee for using my own provider keys (BYOK)?">
-    Yes, if you choose to use your own provider API keys (Bring Your Own Key -
-    BYOK), there is a fee of' '
-    bn(openRouterBYOKFee.fraction).times(100).toString()% of what the same
-    model and provider would normally cost on OpenRouter. This fee is deducted
-    from your OpenRouter credits. This allows you to manage your rate limits and
-    costs directly with the provider while still leveraging OpenRouter's unified
-    interface.
-  </Accordion>
+        加密支付需支付 getTotalFeeString('coinbase') 的费用。
+    </Accordion>
+    <Accordion title="使用我自己的提供商密钥 (BYOK) 是否需要付费？">
+        是的，如果您选择使用自己的提供商 API 密钥（自带密钥 - BYOK），则需要支付相当于相同型号和提供商在 OpenRouter 上正常费用的 ' bn(openRouterBYOKFee.fraction).times(100).toString()% 的费用。此费用将从您的 OpenRouter 积分中扣除。这样，您就可以直接与提供商管理速率限制和费用，同时仍然使用 OpenRouter 的统一界面。
+    </Accordion>
 </AccordionGroup>
 
-## Models and Providers
+## 模型和提供者
 
 <AccordionGroup>
-  <Accordion title="What LLM models does OpenRouter support?">
-    OpenRouter provides access to a wide variety of LLM models, including frontier models from major AI labs.
-    For a complete list of models you can visit the [models browser](https://openrouter.ai/models) or fetch the list through the [models api](https://openrouter.ai/api/v1/models).
-  </Accordion>
-  <Accordion title="How frequently are new models added?">
-    We work on adding models as quickly as we can. We often have partnerships with
-    the labs releasing models and can release models as soon as they are
-    available. If there is a model missing that you'd like OpenRouter to support, feel free to message us on
-    [Discord](https://discord.gg/fVyRaUDgxW).
-  </Accordion>
-  <Accordion title="What are model variants?">
-    Variants are suffixes that can be added to the model slug to change its behavior.
+    <Accordion title="OpenRouter 支持哪些 LLM 模型？">
+        OpenRouter 提供各种 LLM 模型，包括来自各大 AI 实验室的前沿模型。完整的模型列表，您可以访问 [模型浏览器](https://openrouter.ai/models) 或通过 [模型 API](https://openrouter.ai/api/v1/models) 获取。
+    </Accordion>
+    <Accordion title="新模型添加的频率是多少？">
+        我们致力于尽快添加模型。我们经常与发布模型的实验室合作，并会在模型可用时立即发布。如果您希望 OpenRouter 支持某个缺失的模型，请随时在 [Discord](https://discord.gg/fVyRaUDgxW) 上给我们留言。
+    </Accordion>
+    <Accordion title="什么是模型变体？">
+        变体是可以添加到模型 slug 以改变其行为的后缀。
 
-    Static variants can only be used with specific models and these are listed in our [models api](https://openrouter.ai/api/v1/models).
+        静态变体只能与特定模型一起使用，这些模型在我们的[模型 api](https://openrouter.ai/api/v1/models)中列出。
 
-    1. `:free` - The model is always provided for free and has low rate limits.
-    2. `:beta` - The model is not moderated by OpenRouter.
-    3. `:extended` - The model has longer than usual context length.
-    4. `:thinking` - The model supports reasoning by default.
+        1. `:free` - 该模型始终免费提供，且速率限制较低。
+        2. `:beta` - 该模型不受 OpenRouter 监管。
+        3. `:extended` - 该模型的上下文长度比平常更长。
+        4. `:thinking` - 该模型默认支持推理。
 
-    Dynamic variants can be used on all models and they change the behavior of how the request is routed or used.
+        动态变体可用于所有模型，它们会改变请求的路由或使用方式的行为。
 
-    1. `:online` - All requests will run a query to extract web results that are attached to the prompt.
-    2. `:nitro` - Providers will be sorted by throughput rather than the default sort, optimizing for faster response times.
-    3. `:floor` - Providers will be sorted by price rather than the default sort, prioritizing the most cost-effective options.
-  </Accordion>
-  <Accordion title="I am an inference provider, how can I get listed on OpenRouter?">
-    You can read our requirements at the [Providers
-    page](/docs/use-cases/for-providers). If you would like to contact us, the best
-    place to reach us is over email.
-  </Accordion>
-  <Accordion title="What is the expected latency/response time for different models?">
-    For each model on OpenRouter we show the latency (time to first token) and the token
-    throughput for all providers. You can use this to estimate how long requests
-    will take. If you would like to optimize for throughput you can use the
-    `:nitro` variant to route to the fastest provider.
-  </Accordion>
-  <Accordion title="How does model fallback work if a provider is unavailable?">
-    If a provider returns an error OpenRouter will automatically fall back to the
-    next provider. This happens transparently to the user and allows production
-    apps to be much more resilient. OpenRouter has a lot of options to configure
-    the provider routing behavior. The full documentation can be found [here](/docs/features/provider-routing).
-  </Accordion>
+        1. `:online` - 所有请求都将运行查询以提取附加到提示的 Web 结果。
+        2. `:nitro` - 提供商将按吞吐量排序，而不是按默认排序，以优化更快的响应时间。
+        3. `:floor` - 提供商将按价格排序，而不是按默认排序，优先考虑最具成本效益的选项。
+    </Accordion>
+    <Accordion title="我是推理提供商，如何在 OpenRouter 上列出？">
+        您可以在[提供商页面](/docs/use-cases/for-providers)阅读我们的要求。如果您想联系我们，最好的方式是通过电子邮件。
+    </Accordion>
+    <Accordion title="不同模型的预期延迟/响应时间是多少？">
+        对于 OpenRouter 上的每个模型，我们都会显示所有提供商的延迟（第一个令牌的时间）和令牌吞吐量。您可以使用这些信息来估算请求所需的时间。如果您想优化吞吐量，可以使用 `:nitro` 变体路由到最快的提供商。
+    </Accordion>
+    <Accordion title="如果提供商不可用，模型回退如何工作？">
+        如果某个提供程序返回错误，OpenRouter 将自动回退到下一个提供程序。这对用户来说是透明的，并且能够显著提高生产环境应用的弹性。OpenRouter 提供了很多选项来配置提供程序的路由行为。完整文档可在此处找到。
+    </Accordion>
 </AccordionGroup>
 
 ## API Technical Specifications
 
 <AccordionGroup>
-  <Accordion title="What authentication methods are supported?">
-    OpenRouter uses three authentication methods:
+    <Accordion title="What authentication methods are supported?">
+        OpenRouter uses three authentication methods:
 
-    1. Cookie-based authentication for the web interface and chatroom
-    2. API keys (passed as Bearer tokens) for accessing the completions API and other core endpoints
-    3. [Provisioning API keys](/docs/features/provisioning-api-keys) for programmatically managing API keys through the key management endpoints
-  </Accordion>
-  <Accordion title="How are rate limits calculated?">
-    For free models, rate limits are determined by the credits that you have purchased.
-    If you have purchased at least FREE_MODEL_CREDITS_THRESHOLD credits, your free model rate limit will be FREE_MODEL_HAS_CREDITS_RPD requests per day.
-    Otherwise, you will be rate limited to FREE_MODEL_NO_CREDITS_RPD free model API requests per day.
+        1. Cookie-based authentication for the web interface and chatroom
+        2. API keys (passed as Bearer tokens) for accessing the completions API and other core endpoints
+        3. [Provisioning API keys](/docs/features/provisioning-api-keys) for programmatically managing API keys through
+        the key management endpoints
+    </Accordion>
+    <Accordion title="How are rate limits calculated?">
+        For free models, rate limits are determined by the credits that you have purchased.
+        If you have purchased at least FREE_MODEL_CREDITS_THRESHOLD credits, your free model rate limit will be
+        FREE_MODEL_HAS_CREDITS_RPD requests per day.
+        Otherwise, you will be rate limited to FREE_MODEL_NO_CREDITS_RPD free model API requests per day.
 
-    You can learn more about how rate limits work for paid accounts in our [rate limits documentation](/docs/api-reference/limits).
-  </Accordion>
-  <Accordion title="What API endpoints are available?">
-    OpenRouter implements the OpenAI API specification for /completions and
-    /chat/completions endpoints, allowing you to use any model with the same
-    request/response format. Additional endpoints like /api/v1/models are also
-    available. See our [API documentation](/docs/api-reference/overview) for
-    detailed specifications.
-  </Accordion>
-  <Accordion title="What are the supported formats?">
-    The API supports text and images.
-    [Images](/docs/api-reference/overview#images--multimodal) can be passed as
-    URLs or base64 encoded images. PDF and other file types are coming soon.
-  </Accordion>
-  <Accordion title="How does streaming work?">
-    Streaming uses server-sent events (SSE) for real-time token delivery. Set
-    `stream: true` in your request to enable streaming responses.
-  </Accordion>
-  <Accordion title="What SDK support is available?">
-    OpenRouter is a drop-in replacement for OpenAI. Therefore, any SDKs that
-    support OpenAI by default also support OpenRouter. Check out our
-    [docs](/docs/community/open-ai-sdk) for more details.
-  </Accordion>
+        You can learn more about how rate limits work for paid accounts in our [rate limits
+        documentation](/docs/api-reference/limits).
+    </Accordion>
+    <Accordion title="What API endpoints are available?">
+        OpenRouter implements the OpenAI API specification for /completions and
+        /chat/completions endpoints, allowing you to use any model with the same
+        request/response format. Additional endpoints like /api/v1/models are also
+        available. See our [API documentation](/docs/api-reference/overview) for
+        detailed specifications.
+    </Accordion>
+    <Accordion title="What are the supported formats?">
+        The API supports text and images.
+        [Images](/docs/api-reference/overview#images--multimodal) can be passed as
+        URLs or base64 encoded images. PDF and other file types are coming soon.
+    </Accordion>
+    <Accordion title="How does streaming work?">
+        Streaming uses server-sent events (SSE) for real-time token delivery. Set
+        `stream: true` in your request to enable streaming responses.
+    </Accordion>
+    <Accordion title="What SDK support is available?">
+        OpenRouter is a drop-in replacement for OpenAI. Therefore, any SDKs that
+        support OpenAI by default also support OpenRouter. Check out our
+        [docs](/docs/community/open-ai-sdk) for more details.
+    </Accordion>
 </AccordionGroup>
 
 ## Privacy and Data Logging
@@ -148,107 +133,117 @@ description: "查找有关 OpenRouter 的统一 API、模型访问、定价和�
 Please see our [Terms of Service](https://openrouter.ai/terms) and [Privacy Policy](https://openrouter.ai/privacy).
 
 <AccordionGroup>
-  <Accordion title="What data is logged during API use?">
-    We log basic request metadata (timestamps, model used, token counts). Prompt
-    and completion are not logged by default. We do zero logging of your prompts/completions,
-    even if an error occurs, unless you opt-in to logging them.
+    <Accordion title="What data is logged during API use?">
+        We log basic request metadata (timestamps, model used, token counts). Prompt
+        and completion are not logged by default. We do zero logging of your prompts/completions,
+        even if an error occurs, unless you opt-in to logging them.
 
-    We have an opt-in [setting](https://openrouter.ai/settings/privacy) that
-    lets users opt-in to log their prompts and completions in exchange for a 1%
-    discount on usage costs.
-  </Accordion>
-  <Accordion title="What data is logged during Chatroom use?">
-    The same data privacy applies to the chatroom as the API. All conversations
-    in the chatroom are stored locally on your device. Conversations will not sync across devices.
-    It is possible to export and import conversations using the settings menu in the chatroom.
-  </Accordion>
-  <Accordion title="What third-party sharing occurs?">
-    OpenRouter is a proxy that sends your requests to the model provider for it to be completed.
-    We work with all providers to, when possible, ensure that prompts and completions are not logged or used for training.
-    Providers that do log, or where we have been unable to confirm their policy, will not be routed to unless the model training
-    toggle is switched on in the [privacy settings](https://openrouter.ai/settings/privacy) tab.
+        We have an opt-in [setting](https://openrouter.ai/settings/privacy) that
+        lets users opt-in to log their prompts and completions in exchange for a 1%
+        discount on usage costs.
+    </Accordion>
+    <Accordion title="What data is logged during Chatroom use?">
+        The same data privacy applies to the chatroom as the API. All conversations
+        in the chatroom are stored locally on your device. Conversations will not sync across devices.
+        It is possible to export and import conversations using the settings menu in the chatroom.
+    </Accordion>
+    <Accordion title="What third-party sharing occurs?">
+        OpenRouter is a proxy that sends your requests to the model provider for it to be completed.
+        We work with all providers to, when possible, ensure that prompts and completions are not logged or used for
+        training.
+        Providers that do log, or where we have been unable to confirm their policy, will not be routed to unless the
+        model training
+        toggle is switched on in the [privacy settings](https://openrouter.ai/settings/privacy) tab.
 
-    If you specify [provider routing](/docs/features/provider-routing) in your request, but none of the providers
-    match the level of privacy specified in your account settings, you will get an error and your request will not complete.
-  </Accordion>
+        If you specify [provider routing](/docs/features/provider-routing) in your request, but none of the providers
+        match the level of privacy specified in your account settings, you will get an error and your request will not
+        complete.
+    </Accordion>
 </AccordionGroup>
 
 ## Credit and Billing Systems
 
 <AccordionGroup>
-  <Accordion title="What purchase options exist?">
-    OpenRouter uses a credit system where the base currency is US dollars. All
-    of the pricing on our site and API is denoted in dollars. Users can top up
-    their balance manually or set up auto top up so that the balance is
-    replenished when it gets below the set threshold.
-  </Accordion>
-  <Accordion title="Do credits expire?">
-    Per our [terms](https://openrouter.ai/terms), we reserve the right to expire
-    unused credits after one year of purchase.
-  </Accordion>
-  <Accordion title="My credits haven't showed up in my account">
-    If you paid using Stripe, sometimes there is an issue with the Stripe
-    integration and credits can get delayed in showing up on your account. Please allow up to one hour.
-    If your credits still have not appeared after an hour, contact us on [Discord](https://discord.gg/fVyRaUDgxW) and we will
-    look into it.
+    <Accordion title="What purchase options exist?">
+        OpenRouter uses a credit system where the base currency is US dollars. All
+        of the pricing on our site and API is denoted in dollars. Users can top up
+        their balance manually or set up auto top up so that the balance is
+        replenished when it gets below the set threshold.
+    </Accordion>
+    <Accordion title="Do credits expire?">
+        Per our [terms](https://openrouter.ai/terms), we reserve the right to expire
+        unused credits after one year of purchase.
+    </Accordion>
+    <Accordion title="My credits haven't showed up in my account">
+        If you paid using Stripe, sometimes there is an issue with the Stripe
+        integration and credits can get delayed in showing up on your account. Please allow up to one hour.
+        If your credits still have not appeared after an hour, contact us on [Discord](https://discord.gg/fVyRaUDgxW)
+        and we will
+        look into it.
 
-    If you paid using crypto, please reach out to us on [Discord](https://discord.gg/fVyRaUDgxW)
-    and we will look into it.
-  </Accordion>
-  <Accordion title="What's the refund policy?">
-    Refunds for unused Credits may be requested within twenty-four (24) hours from the time the transaction was processed. If no refund request is received within twenty-four (24) hours following the purchase, any unused Credits become non-refundable. To request a refund within the eligible period, you can use the refund button on the [Credits](https://openrouter.ai/settings/credits) page. The unused credit amount will be refunded to your payment method; the platform fees are non-refundable. Note that cryptocurrency payments are never refundable.
-  </Accordion>
-  <Accordion title="How to monitor credit usage?">
-    The [Activity](https://openrouter.ai/activity) page allows users to view
-    their historic usage and filter the usage by model, provider and api key.
+        If you paid using crypto, please reach out to us on [Discord](https://discord.gg/fVyRaUDgxW)
+        and we will look into it.
+    </Accordion>
+    <Accordion title="What's the refund policy?">
+        Refunds for unused Credits may be requested within twenty-four (24) hours from the time the transaction was
+        processed. If no refund request is received within twenty-four (24) hours following the purchase, any unused
+        Credits become non-refundable. To request a refund within the eligible period, you can use the refund button on
+        the [Credits](https://openrouter.ai/settings/credits) page. The unused credit amount will be refunded to your
+        payment method; the platform fees are non-refundable. Note that cryptocurrency payments are never refundable.
+    </Accordion>
+    <Accordion title="How to monitor credit usage?">
+        The [Activity](https://openrouter.ai/activity) page allows users to view
+        their historic usage and filter the usage by model, provider and api key.
 
-    We also provide a [credits api](/docs/api-reference/get-credits) that has
-    live information about the balance and remaining credits for the account.
-  </Accordion>
-  <Accordion title="What free tier options exist?">
-    All new users receive a very small free allowance to be able to test out OpenRouter.
-    There are many [free models](https://openrouter.ai/models?max_price=0) available
-    on OpenRouter, it is important to note that these models have low rate limits (FREE_MODEL_NO_CREDITS_RPD requests per day total)
-    and are usually not suitable for production use. If you have purchased at least FREE_MODEL_CREDITS_THRESHOLD credits,
-    the free models will be limited to FREE_MODEL_HAS_CREDITS_RPD requests per day.
-  </Accordion>
-  <Accordion title="How do volume discounts work?">
-    OpenRouter does not currently offer volume discounts, but you can reach out to us
-    over email if you think you have an exceptional use case.
-  </Accordion>
-  <Accordion title="What payment methods are accepted?">
-    We accept all major credit cards, AliPay and cryptocurrency payments in
-    USDC. We are working on integrating PayPal soon, if there are any payment
-    methods that you would like us to support please reach out on [Discord](https://discord.gg/fVyRaUDgxW).
-  </Accordion>
-  <Accordion title="How does OpenRouter make money?">
-    We charge a small [fee](/docs/faq#pricing-and-fees) when purchasing credits. We never mark-up the pricing
-    of the underlying providers, and you'll always pay the same as the provider's
-    listed price.
-  </Accordion>
+        We also provide a [credits api](/docs/api-reference/get-credits) that has
+        live information about the balance and remaining credits for the account.
+    </Accordion>
+    <Accordion title="What free tier options exist?">
+        All new users receive a very small free allowance to be able to test out OpenRouter.
+        There are many [free models](https://openrouter.ai/models?max_price=0) available
+        on OpenRouter, it is important to note that these models have low rate limits (FREE_MODEL_NO_CREDITS_RPD
+        requests per day total)
+        and are usually not suitable for production use. If you have purchased at least FREE_MODEL_CREDITS_THRESHOLD
+        credits,
+        the free models will be limited to FREE_MODEL_HAS_CREDITS_RPD requests per day.
+    </Accordion>
+    <Accordion title="How do volume discounts work?">
+        OpenRouter does not currently offer volume discounts, but you can reach out to us
+        over email if you think you have an exceptional use case.
+    </Accordion>
+    <Accordion title="What payment methods are accepted?">
+        We accept all major credit cards, AliPay and cryptocurrency payments in
+        USDC. We are working on integrating PayPal soon, if there are any payment
+        methods that you would like us to support please reach out on [Discord](https://discord.gg/fVyRaUDgxW).
+    </Accordion>
+    <Accordion title="How does OpenRouter make money?">
+        We charge a small [fee](/docs/faq#pricing-and-fees) when purchasing credits. We never mark-up the pricing
+        of the underlying providers, and you'll always pay the same as the provider's
+        listed price.
+    </Accordion>
 </AccordionGroup>
 
 ## Account Management
 
 <AccordionGroup>
-  <Accordion title="How can I delete my account?">
-    Go to the [Settings](https://openrouter.ai/settings/preferences) page and click Manage Account.
-    In the modal that opens, select the Security tab. You'll find an option there to delete your account.
+    <Accordion title="How can I delete my account?">
+        Go to the [Settings](https://openrouter.ai/settings/preferences) page and click Manage Account.
+        In the modal that opens, select the Security tab. You'll find an option there to delete your account.
 
-    Note that unused credits will be lost and cannot be reclaimed if you delete and later recreate your account.
-  </Accordion>
-  <Accordion title="How does team access work?">
-    Team management is coming very soon\! For now you can use [provisioning API
-    keys](/docs/features/provisioning-api-keys) to allow sharing credits with
-    people on your team.
-  </Accordion>
-  <Accordion title="What analytics are available?">
-    Our [activity dashboard](https://openrouter.ai/activity) provides real-time
-    usage metrics. If you would like any specific reports or metrics please
-    contact us.
-  </Accordion>
-  <Accordion title="How can I contact support?">
-    The best way to reach us is to join our
-    [Discord](https://discord.gg/fVyRaUDgxW) and ping us in the #help forum.
-  </Accordion>
+        Note that unused credits will be lost and cannot be reclaimed if you delete and later recreate your account.
+    </Accordion>
+    <Accordion title="How does team access work?">
+        Team management is coming very soon\! For now you can use [provisioning API
+        keys](/docs/features/provisioning-api-keys) to allow sharing credits with
+        people on your team.
+    </Accordion>
+    <Accordion title="What analytics are available?">
+        Our [activity dashboard](https://openrouter.ai/activity) provides real-time
+        usage metrics. If you would like any specific reports or metrics please
+        contact us.
+    </Accordion>
+    <Accordion title="How can I contact support?">
+        The best way to reach us is to join our
+        [Discord](https://discord.gg/fVyRaUDgxW) and ping us in the #help forum.
+    </Accordion>
 </AccordionGroup>
