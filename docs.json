@@ -15,6 +15,7 @@
         "groups": [
           {
             "group": "概述",
+            "icon": "compass",
             "pages": [
               "quickstart",
               "faq",
