@@ -16,7 +16,6 @@
           {
             "group": "概述",
             "pages": [
-              "index",
               "quickstart",
               "faq",
               "principles",
