@@ -19,14 +19,13 @@
               "quickstart",
               "faq",
               "principles",
-              "models",
-              "development"
+              "models"
             ]
           },
           {
-            "group": "Customization",
+            "group": "API 参考",
             "pages": [
-              "essentials/settings",
+              "essentials/overview",
               "essentials/navigation"
             ]
           },
