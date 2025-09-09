@@ -74,7 +74,8 @@
         "tab": "开发工具",
         "groups": [
           {
-            "group": "开发工具",
+            "group": "概述",
+            "icon": "compass",
             "pages": [
               "development-tools/claude-code"
             ]
