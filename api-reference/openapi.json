@@ -1,37 +1,49 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Completion API",
-    "description": "An API for sending text completion requests to a selected model in text-only format.",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
+    "title": "OpenRouter Completion API",
+    "version": "1.0.0",
+    "description": "Send completion requests to selected models (text-only format)",
+    "contact": {
+      "url": "https://openrouter.ai"
+    }
   },
   "servers": [
     {
-      "url": "https://openrouter.ai/api/v1"
+      "url": "https://openrouter.ai/api/v1",
+      "description": "OpenRouter API Server"
     }
   ],
   "security": [
     {
-      "bearerAuth": []
+      "BearerAuth": []
     }
   ],
   "paths": {
     "/completions": {
       "post": {
-        "description": "Send a completion request to a selected model (text-only format).",
+        "summary": "Create completion",
+        "description": "Send a completion request to a selected model (text-only format)",
+        "operationId": "createCompletion",
+        "tags": ["Completions"],
         "requestBody": {
-          "description": "Details of the completion request, including the model and prompt.",
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CompletionRequest"
+              },
+              "examples": {
+                "basic_completion": {
+                  "summary": "Basic completion request",
+                  "value": {
+                    "model": "string",
+                    "prompt": "string"
+                  }
+                }
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -45,22 +57,217 @@
             }
           },
           "400": {
-            "description": "Invalid request, such as missing or invalid parameters",
+            "description": "Bad request - Invalid input parameters",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
           },
           "401": {
-            "description": "Unauthorized, invalid or missing Bearer token",
+            "description": "Unauthorized - Invalid or missing authorization token",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token for authentication"
+      }
+    },
+    "schemas": {
+      "CompletionRequest": {
+        "type": "object",
+        "required": ["model", "prompt"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "The model to use for completion",
+            "example": "gpt-3.5-turbo"
+          },
+          "prompt": {
+            "type": "string",
+            "description": "The text prompt to complete",
+            "example": "Once upon a time"
+          },
+          "max_tokens": {
+            "type": "integer",
+            "description": "Maximum number of tokens to generate",
+            "minimum": 1,
+            "example": 100
+          },
+          "temperature": {
+            "type": "number",
+            "description": "Controls randomness in output (0.0 to 2.0)",
+            "minimum": 0.0,
+            "maximum": 2.0,
+            "example": 0.7
+          },
+          "top_p": {
+            "type": "number",
+            "description": "Nucleus sampling parameter",
+            "minimum": 0.0,
+            "maximum": 1.0,
+            "example": 1.0
+          },
+          "frequency_penalty": {
+            "type": "number",
+            "description": "Penalty for frequency of tokens",
+            "minimum": -2.0,
+            "maximum": 2.0,
+            "example": 0.0
+          },
+          "presence_penalty": {
+            "type": "number",
+            "description": "Penalty for presence of tokens",
+            "minimum": -2.0,
+            "maximum": 2.0,
+            "example": 0.0
+          },
+          "stop": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 4
+              }
+            ],
+            "description": "Stop sequences to terminate generation"
+          }
+        }
+      },
+      "CompletionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the completion",
+            "example": "cmpl-uqkvlQyYK7bGYrRHQ0eXlWi7"
+          },
+          "object": {
+            "type": "string",
+            "description": "Object type",
+            "example": "text_completion"
+          },
+          "created": {
+            "type": "integer",
+            "description": "Unix timestamp of creation",
+            "example": 1687882411
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for completion",
+            "example": "gpt-3.5-turbo"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CompletionChoice"
+            },
+            "description": "List of completion choices"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/Usage",
+            "description": "Token usage information"
+          }
+        }
+      },
+      "CompletionChoice": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "description": "Generated completion text"
+          },
+          "index": {
+            "type": "integer",
+            "description": "Choice index"
+          },
+          "finish_reason": {
+            "type": "string",
+            "enum": ["stop", "length", "content_filter"],
+            "description": "Reason why the completion finished"
+          }
+        }
+      },
+      "Usage": {
+        "type": "object",
+        "properties": {
+          "prompt_tokens": {
+            "type": "integer",
+            "description": "Number of tokens in the prompt"
+          },
+          "completion_tokens": {
+            "type": "integer",
+            "description": "Number of tokens in the completion"
+          },
+          "total_tokens": {
+            "type": "integer",
+            "description": "Total number of tokens used"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "Error message"
+              },
+              "type": {
+                "type": "string",
+                "description": "Error type"
+              },
+              "code": {
+                "type": "string",
+                "description": "Error code"
               }
             }
           }
@@ -68,62 +275,10 @@
       }
     }
   },
-  "components": {
-    "schemas": {
-      "CompletionRequest": {
-        "type": "object",
-        "required": [
-          "model",
-          "prompt"
-        ],
-        "properties": {
-          "model": {
-            "type": "string",
-            "description": "The identifier of the model to use for completion."
-          },
-          "prompt": {
-            "type": "string",
-            "description": "The input text prompt for the completion."
-          }
-        }
-      },
-      "CompletionResponse": {
-        "type": "object",
-        "required": [
-          "completion"
-        ],
-        "properties": {
-          "completion": {
-            "type": "string",
-            "description": "The generated text completion from the model."
-          }
-        }
-      },
-      "Error": {
-        "type": "object",
-        "required": [
-          "code",
-          "message"
-        ],
-        "properties": {
-          "code": {
-            "type": "integer",
-            "format": "int32",
-            "description": "Error code indicating the type of error."
-          },
-          "message": {
-            "type": "string",
-            "description": "A human-readable description of the error."
-          }
-        }
-      }
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "description": "Bearer token authentication for accessing the API."
-      }
+  "tags": [
+    {
+      "name": "Completions",
+      "description": "Text completion operations"
     }
-  }
+  ]
 }
