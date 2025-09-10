@@ -15,7 +15,6 @@
       "post": {
         "summary": "Completion",
         "description": "Send a completion request to a selected model (text-only format)",
-        "operationId": "createCompletion",
         "security": [
           {
             "BearerAuth": []
@@ -26,21 +25,24 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CompletionRequest"
+                "type": "object",
+                "required": ["model", "prompt"],
+                "properties": {
+                  "model": {
+                    "type": "string"
+                  },
+                  "prompt": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
+            "description": "Successful response"
           }
         }
       }
@@ -51,20 +53,6 @@
       "BearerAuth": {
         "type": "http",
         "scheme": "bearer"
-      }
-    },
-    "schemas": {
-      "CompletionRequest": {
-        "type": "object",
-        "required": ["model", "prompt"],
-        "properties": {
-          "model": {
-            "type": "string"
-          },
-          "prompt": {
-            "type": "string"
-          }
-        }
       }
     }
   }
