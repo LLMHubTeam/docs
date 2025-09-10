@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "OpenRouter Completion API",
-    "description": "API for generating text completions from a given prompt.",
+    "description": "API for generating text completions from a given prompt. Supports multiple AI models with a unified interface, including parameters for controlling output diversity, token limits, and streaming responses.",
     "version": "1.0.0"
   },
   "servers": [
@@ -19,7 +19,7 @@
     "/completions": {
       "post": {
         "summary": "Create a completion",
-        "description": "Generates a text completion given a prompt and model.",
+        "description": "Generates a text completion given a prompt and model. Supports advanced parameters for controlling output diversity, token limits, and streaming. Compatible with multiple providers, with OpenRouter normalizing the schema to align with the OpenAI Completion API.",
         "operationId": "createCompletion",
         "security": [
           {
@@ -36,15 +36,104 @@
                 "properties": {
                   "model": {
                     "type": "string",
-                    "description": "The model to use for text generation."
+                    "description": "The model to use for text generation. If omitted, the user's default model is used. Must include the organization prefix (e.g., 'openai/gpt-3.5-turbo-instruct')."
                   },
                   "prompt": {
                     "type": "string",
-                    "description": "The input text prompt."
+                    "description": "The input text prompt to generate completions for."
                   },
                   "max_tokens": {
                     "type": "integer",
-                    "description": "The maximum number of tokens to generate."
+                    "description": "The maximum number of tokens to generate in the completion. Range: [1, context_length]."
+                  },
+                  "temperature": {
+                    "type": "number",
+                    "description": "Controls randomness of the output. Lower values (e.g., 0) make outputs more deterministic, higher values (up to 2) increase diversity. Default: 1.0.",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "top_p": {
+                    "type": "number",
+                    "description": "Limits the model to consider only the top tokens whose cumulative probability exceeds this value. Range: (0, 1]. Default: 1.0.",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "top_k": {
+                    "type": "integer",
+                    "description": "Limits the model to the top K most likely tokens. Range: [1, Infinity). Not supported by all models.",
+                    "minimum": 1
+                  },
+                  "frequency_penalty": {
+                    "type": "number",
+                    "description": "Reduces the likelihood of repeating tokens based on their frequency in the input. Range: [-2, 2]. Default: 0.",
+                    "minimum": -2,
+                    "maximum": 2
+                  },
+                  "presence_penalty": {
+                    "type": "number",
+                    "description": "Reduces the likelihood of repeating tokens already used in the input. Range: [-2, 2]. Default: 0.",
+                    "minimum": -2,
+                    "maximum": 2
+                  },
+                  "repetition_penalty": {
+                    "type": "number",
+                    "description": "Controls token repetition. Higher values reduce repetition but may affect coherence if too high. Range: (0, 2]. Default: 1.0.",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "seed": {
+                    "type": "integer",
+                    "description": "Sets a seed for deterministic outputs. Same seed with same parameters should yield the same result."
+                  },
+                  "logit_bias": {
+                    "type": "object",
+                    "description": "Mapping of token IDs to bias values to influence token selection. Not supported by all models."
+                  },
+                  "logprobs": {
+                    "type": "integer",
+                    "description": "Number of top log probabilities to return. Not supported by all models."
+                  },
+                  "min_p": {
+                    "type": "number",
+                    "description": "Minimum probability threshold for tokens relative to the most likely token. Range: [0, 1]."
+                  },
+                  "top_a": {
+                    "type": "number",
+                    "description": "Dynamic top-p sampling based on the most likely token's probability. Range: [0, 1]."
+                  },
+                  "stream": {
+                    "type": "boolean",
+                    "description": "Enables streaming of results using Server-Sent Events (SSE). Default: false."
+                  },
+                  "provider": {
+                    "type": "object",
+                    "description": "Preferences for provider routing, including order, allow, ignore, and require_parameters fields.",
+                    "properties": {
+                      "order": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "List of provider slugs in preferred order."
+                      },
+                      "allow": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "List of allowed providers."
+                      },
+                      "ignore": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "List of providers to exclude."
+                      },
+                      "require_parameters": {
+                        "type": "boolean",
+                        "description": "If true, only route to providers supporting all specified parameters."
+                      }
+                    }
+                  },
+                  "transforms": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "List of prompt transforms (OpenRouter-specific)."
                   }
                 },
                 "required": ["model", "prompt"]
@@ -52,7 +141,10 @@
               "example": {
                 "model": "openai/gpt-3.5-turbo-instruct",
                 "prompt": "Write a haiku about recursion in programming.",
-                "max_tokens": 100
+                "max_tokens": 100,
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "stream": false
               }
             }
           }
@@ -65,27 +157,61 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "id": { "type": "string" },
-                    "object": { "type": "string" },
-                    "created": { "type": "integer" },
-                    "model": { "type": "string" },
+                    "id": {
+                      "type": "string",
+                      "description": "Unique identifier for the completion request."
+                    },
+                    "object": {
+                      "type": "string",
+                      "description": "Type of the response object, e.g., 'text_completion'."
+                    },
+                    "created": {
+                      "type": "integer",
+                      "description": "Unix timestamp of when the response was created."
+                    },
+                    "model": {
+                      "type": "string",
+                      "description": "The model used for the completion."
+                    },
                     "choices": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
-                          "text": { "type": "string" },
-                          "index": { "type": "integer" },
-                          "finish_reason": { "type": "string" }
+                          "text": {
+                            "type": "string",
+                            "description": "The generated text completion."
+                          },
+                          "index": {
+                            "type": "integer",
+                            "description": "Index of the choice in the list of completions."
+                          },
+                          "finish_reason": {
+                            "type": "string",
+                            "description": "Reason the completion stopped, e.g., 'stop', 'length', 'content_filter', or 'error'."
+                          },
+                          "logprobs": {
+                            "type": "object",
+                            "description": "Log probabilities of tokens, if requested."
+                          }
                         }
                       }
                     },
                     "usage": {
                       "type": "object",
                       "properties": {
-                        "prompt_tokens": { "type": "integer" },
-                        "completion_tokens": { "type": "integer" },
-                        "total_tokens": { "type": "integer" }
+                        "prompt_tokens": {
+                          "type": "integer",
+                          "description": "Number of tokens in the prompt."
+                        },
+                        "completion_tokens": {
+                          "type": "integer",
+                          "description": "Number of tokens in the completion."
+                        },
+                        "total_tokens": {
+                          "type": "integer",
+                          "description": "Total number of tokens used."
+                        }
                       }
                     }
                   }
@@ -112,7 +238,16 @@
             }
           },
           "400": {
-            "description": "Invalid request error"
+            "description": "Invalid request error, e.g., missing required parameters or invalid parameter values."
+          },
+          "401": {
+            "description": "Unauthorized request due to invalid or missing Bearer token."
+          },
+          "402": {
+            "description": "Payment required, e.g., insufficient credits."
+          },
+          "429": {
+            "description": "Rate limit exceeded."
           }
         }
       }
@@ -122,7 +257,8 @@
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "description": "Bearer token authentication. Use your API key as the token."
       }
     }
   }

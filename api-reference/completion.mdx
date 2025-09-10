@@ -2,3 +2,58 @@
 title: 'Completion'
 openapi: 'POST /completions'
 ---
+
+## Overview
+
+The Completion API generates text completions for a given prompt using a specified model. This endpoint (`POST https://openrouter.ai/api/v1/completions`) supports a unified interface for multiple AI models, with parameters to control output diversity, token limits, and streaming responses. OpenRouter normalizes the schema to align with the OpenAI Completion API, ensuring compatibility across providers.
+
+## Authentication
+
+Requires Bearer token authentication. Include your API key in the `Authorization` header as `Bearer <token>`.
+
+## Request
+
+### Endpoint
+
+`POST https://openrouter.ai/api/v1/completions`
+
+### Headers
+
+- **Authorization**: `Bearer <token>` (Required)
+- **HTTP-Referer**: `<your_site_url>` (Optional, for app discoverability on OpenRouter)
+- **X-Title**: `<your_site_name>` (Optional, for app title in rankings)
+- **Content-Type**: `application/json`
+
+### Body Parameters
+
+| Parameter            | Type     | Description                                                                 | Required | Default |
+|----------------------|----------|-----------------------------------------------------------------------------|----------|---------|
+| `model`              | String   | The model to use for text generation (e.g., `openai/gpt-3.5-turbo-instruct`). If omitted, the user's default model is used. | Yes      | -       |
+| `prompt`             | String   | The input text prompt to generate completions for.                           | Yes      | -       |
+| `max_tokens`         | Integer  | Maximum number of tokens to generate. Range: [1, context_length].            | No       | -       |
+| `temperature`        | Number   | Controls output randomness. Range: [0, 2]. Lower values are more deterministic. | No       | 1.0     |
+| `top_p`              | Number   | Limits token selection to top tokens with cumulative probability. Range: (0, 1]. | No       | 1.0     |
+| `top_k`              | Integer  | Limits token selection to top K most likely tokens. Range: [1, Infinity). Not supported by all models. | No       | -       |
+| `frequency_penalty`  | Number   | Reduces repetition based on token frequency. Range: [-2, 2].                 | No       | 0       |
+| `presence_penalty`   | Number   | Reduces repetition of used tokens. Range: [-2, 2].                           | No       | 0       |
+| `repetition_penalty` | Number   | Controls token repetition. Range: (0, 2]. Higher values reduce repetition.   | No       | 1.0     |
+| `seed`               | Integer  | Sets a seed for deterministic outputs.                                      | No       | -       |
+| `logit_bias`         | Object   | Mapping of token IDs to bias values. Not supported by all models.            | No       | -       |
+| `logprobs`           | Integer  | Number of top log probabilities to return. Not supported by all models.      | No       | -       |
+| `min_p`              | Number   | Minimum probability threshold for tokens. Range: [0, 1].                     | No       | -       |
+| `top_a`              | Number   | Dynamic top-p sampling based on most likely token. Range: [0, 1].            | No       | -       |
+| `stream`             | Boolean  | Enables streaming via Server-Sent Events (SSE).                             | No       | false   |
+| `provider`           | Object   | Preferences for provider routing (e.g., `order`, `allow`, `ignore`, `require_parameters`). | No       | -       |
+| `transforms`         | Array    | List of prompt transforms (OpenRouter-specific).                             | No       | -       |
+
+### Example Request
+
+```json
+{
+  "model": "openai/gpt-3.5-turbo-instruct",
+  "prompt": "Write a haiku about recursion in programming.",
+  "max_tokens": 100,
+  "temperature": 0.7,
+  "top_p": 0.9,
+  "stream": false
+}
