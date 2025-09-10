@@ -3,36 +3,36 @@
   "info": {
     "title": "OpenRouter Completion API",
     "version": "1.0.0",
-    "description": "OpenRouter completion API for text generation"
+    "description": "API for sending completion requests to a selected model in text-only format."
   },
   "servers": [
     {
-      "url": "https://openrouter.ai/api/v1"
+      "url": "https://openrouter.ai/api/v1",
+      "description": "OpenRouter API server"
     }
   ],
   "paths": {
     "/completions": {
       "post": {
-        "summary": "Send a completion request",
-        "description": "Send a completion request to a selected model (text-only format)",
+        "summary": "Create a completion",
+        "description": "Sends a completion request to a selected model in text-only format.",
         "operationId": "createCompletion",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CompletionRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful completion response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CompletionResponse"
+                "type": "object",
+                "required": ["model", "prompt"],
+                "properties": {
+                  "model": {
+                    "type": "string",
+                    "description": "The identifier of the model to use for completion."
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "description": "The input text prompt for the completion."
+                  }
                 }
               }
             }
@@ -40,37 +40,64 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "BearerAuth": []
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with the completion result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "description": "The structure of the response depends on the model used."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized request due to missing or invalid token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Invalid or missing authorization token"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request due to invalid parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Missing required parameter: model"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
   "components": {
-    "schemas": {
-      "CompletionRequest": {
-        "type": "object",
-        "required": ["model", "prompt"],
-        "properties": {
-          "model": {
-            "type": "string",
-            "description": "模型标识符"
-          },
-          "prompt": {
-            "type": "string",
-            "description": "生成提示文本"
-          }
-        }
-      },
-      "CompletionResponse": {
-        "type": "object",
-        "description": "完成响应对象"
-      }
-    },
     "securitySchemes": {
-      "bearerAuth": {
+      "BearerAuth": {
         "type": "http",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer token authentication."
       }
     }
   }
