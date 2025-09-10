@@ -1,23 +1,185 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenRouter Completion API",
-    "description": "Send a completion request to a selected model (text-only format)",
+    "title": "OpenRouter AI API",
+    "description": "OpenRouter AI API for accessing various AI models and managing credits",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "https://openrouter.ai/api/v1"
+      "url": "https://openrouter.ai/api/v1",
+      "description": "Production server"
     }
   ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Message": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": ["user", "assistant", "system"]
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": ["role", "content"]
+      },
+      "ChatCompletionRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "openai/gpt-3.5-turbo"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            }
+          }
+        },
+        "required": ["model", "messages"]
+      },
+      "CompletionRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string"
+          },
+          "prompt": {
+            "type": "string"
+          }
+        },
+        "required": ["model", "prompt"]
+      },
+      "CoinbaseChargeRequest": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "format": "float",
+            "example": 1.1
+          },
+          "sender": {
+            "type": "string"
+          },
+          "chain_id": {
+            "type": "integer",
+            "example": 1
+          }
+        },
+        "required": ["amount", "sender", "chain_id"]
+      },
+      "Model": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "supported_parameters": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Provider": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "policies": {
+            "type": "object"
+          }
+        }
+      },
+      "Credits": {
+        "type": "object",
+        "properties": {
+          "total_purchased": {
+            "type": "number",
+            "format": "float"
+          },
+          "total_used": {
+            "type": "number",
+            "format": "float"
+          },
+          "remaining": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      },
+      "Generation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ModelEndpoint": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "endpoint": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
   "paths": {
-    "/completions": {
+    "/chat/completions": {
       "post": {
-        "summary": "Completion",
-        "description": "Send a completion request to a selected model (text-only format)",
+        "summary": "Chat completion",
+        "description": "Send a chat completion request to a selected model. The request must contain a \"messages\" array. All advanced options from the base request are also supported.",
         "security": [
           {
-            "BearerAuth": []
+            "bearerAuth": []
           }
         ],
         "requestBody": {
@@ -25,34 +187,288 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": ["model", "prompt"],
-                "properties": {
-                  "model": {
-                    "type": "string"
-                  },
-                  "prompt": {
-                    "type": "string"
+                "$ref": "#/components/schemas/ChatCompletionRequest"
+              },
+              "example": {
+                "model": "openai/gpt-3.5-turbo",
+                "messages": [
+                  {
+                    "role": "user",
+                    "content": "What is the meaning of life?"
                   }
-                },
-                "additionalProperties": false
+                ]
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Successful response"
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
           }
         }
       }
-    }
-  },
-  "components": {
-    "securitySchemes": {
-      "BearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+    },
+    "/completions": {
+      "post": {
+        "summary": "Completion",
+        "description": "Send a completion request to a selected model (text-only format)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompletionRequest"
+              },
+              "example": {
+                "model": "string",
+                "prompt": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/credits/coinbase": {
+      "post": {
+        "summary": "Create a Coinbase charge",
+        "description": "Creates and hydrates a Coinbase Commerce charge for cryptocurrency payments",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoinbaseChargeRequest"
+              },
+              "example": {
+                "amount": 1.1,
+                "sender": "string",
+                "chain_id": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/credits": {
+      "get": {
+        "summary": "Get credits",
+        "description": "Returns the total credits purchased and used for the authenticated user",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Credits"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/generation": {
+      "get": {
+        "summary": "Get a generation",
+        "description": "Returns metadata about a specific generation request",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Generation"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/models": {
+      "get": {
+        "summary": "List available models",
+        "description": "Returns a list of models available through the API. Note: `supported_parameters` is a union of all parameters supported by all providers for this model. There may not be a single provider which offers all of the listed parameters for a model. More documentation available [here](/docs/models).",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Model"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/models/user": {
+      "get": {
+        "summary": "List models filtered by user provider preferences",
+        "description": "Returns a list of models available through the API, filtered based on the user's provider preferences. This endpoint returns the same data structure as `/models` but only includes models from providers that are not in the user's ignored providers list and are either in the user's allowed providers list (if configured) or from any provider (if no allowed providers are specified). These provider preferences can be configured on the /settings page.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Model"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/models/{author}/{slug}/endpoints": {
+      "get": {
+        "summary": "List endpoints for a model",
+        "description": "List endpoints for a specific model",
+        "parameters": [
+          {
+            "name": "author",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "author"
+          },
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "slug"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ModelEndpoint"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/providers": {
+      "get": {
+        "summary": "List available providers",
+        "description": "Returns a list of providers available through the API with their policies and status information.",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Provider"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
