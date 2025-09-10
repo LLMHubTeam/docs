@@ -5,7 +5,7 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/api/v1/completions": {
+    "/completions": {
       "post": {
         "summary": "Send a completion request to a selected model (text-only format)",
         "operationId": "completion",
