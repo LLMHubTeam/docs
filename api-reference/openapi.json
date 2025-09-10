@@ -173,48 +173,6 @@
     }
   },
   "paths": {
-    "/chat/completions": {
-      "post": {
-        "summary": "Chat completion",
-        "description": "Send a chat completion request to a selected model. The request must contain a \"messages\" array. All advanced options from the base request are also supported.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChatCompletionRequest"
-              },
-              "example": {
-                "model": "openai/gpt-3.5-turbo",
-                "messages": [
-                  {
-                    "role": "user",
-                    "content": "What is the meaning of life?"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/completions": {
       "post": {
         "summary": "Completion",
@@ -274,10 +232,10 @@
         }
       }
     },
-    "/credits/coinbase": {
+    "/chat-completion": {
       "post": {
-        "summary": "Create a Coinbase charge",
-        "description": "Creates and hydrates a Coinbase Commerce charge for cryptocurrency payments",
+        "summary": "Chat completion",
+        "description": "Send a chat completion request to a selected model. The request must contain a \"messages\" array. All advanced options from the base request are also supported.",
         "security": [
           {
             "bearerAuth": []
@@ -288,12 +246,16 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CoinbaseChargeRequest"
+                "$ref": "#/components/schemas/ChatCompletionRequest"
               },
               "example": {
-                "amount": 1.1,
-                "sender": "string",
-                "chain_id": 1
+                "model": "openai/gpt-3.5-turbo",
+                "messages": [
+                  {
+                    "role": "user",
+                    "content": "What is the meaning of life?"
+                  }
+                ]
               }
             }
           }
@@ -312,30 +274,7 @@
         }
       }
     },
-    "/credits": {
-      "get": {
-        "summary": "Get credits",
-        "description": "Returns the total credits purchased and used for the authenticated user",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Credits"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/generation": {
+    "/get-a-generation": {
       "get": {
         "summary": "Get a generation",
         "description": "Returns metadata about a specific generation request",
@@ -369,7 +308,7 @@
         }
       }
     },
-    "/models": {
+    "/list-available-models": {
       "get": {
         "summary": "List available models",
         "description": "Returns a list of models available through the API. Note: `supported_parameters` is a union of all parameters supported by all providers for this model. There may not be a single provider which offers all of the listed parameters for a model. More documentation available [here](/docs/models).",
@@ -395,38 +334,7 @@
         }
       }
     },
-    "/models/user": {
-      "get": {
-        "summary": "List models filtered by user provider preferences",
-        "description": "Returns a list of models available through the API, filtered based on the user's provider preferences. This endpoint returns the same data structure as `/models` but only includes models from providers that are not in the user's ignored providers list and are either in the user's allowed providers list (if configured) or from any provider (if no allowed providers are specified). These provider preferences can be configured on the /settings page.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Model"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/models/{author}/{slug}/endpoints": {
+    "/list-endpoints-for-a-model": {
       "get": {
         "summary": "List endpoints for a model",
         "description": "List endpoints for a specific model",
@@ -467,7 +375,38 @@
         }
       }
     },
-    "/providers": {
+    "/list-models-filtered-by-user-provider-preferences": {
+      "get": {
+        "summary": "List models filtered by user provider preferences",
+        "description": "Returns a list of models available through the API, filtered based on the user's provider preferences. This endpoint returns the same data structure as `/models` but only includes models from providers that are not in the user's ignored providers list and are either in the user's allowed providers list (if configured) or from any provider (if no allowed providers are specified). These provider preferences can be configured on the /settings page.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Model"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/list-available-providers": {
       "get": {
         "summary": "List available providers",
         "description": "Returns a list of providers available through the API with their policies and status information.",
@@ -486,6 +425,67 @@
                       }
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get-credits": {
+      "get": {
+        "summary": "Get credits",
+        "description": "Returns the total credits purchased and used for the authenticated user",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Credits"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/create-a-coinbase-charge": {
+      "post": {
+        "summary": "Create a Coinbase charge",
+        "description": "Creates and hydrates a Coinbase Commerce charge for cryptocurrency payments",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CoinbaseChargeRequest"
+              },
+              "example": {
+                "amount": 1.1,
+                "sender": "string",
+                "chain_id": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
                 }
               }
             }
