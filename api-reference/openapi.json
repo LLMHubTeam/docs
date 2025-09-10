@@ -1,19 +1,16 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenRouter Completion API",
-    "description": "API for generating text completions from a given prompt using various AI models.",
-    "version": "1.0.0",
-    "contact": {
-      "name": "OpenRouter Support",
-      "url": "https://openrouter.ai/docs",
-      "email": "support@openrouter.ai"
-    }
+    "title": "OpenAPI Plant Store",
+    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
+    "license": {
+      "name": "MIT"
+    },
+    "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "https://openrouter.ai/api/v1",
-      "description": "Production server"
+      "url": "http://sandbox.mintlify.com"
     }
   ],
   "security": [
@@ -22,117 +19,109 @@
     }
   ],
   "paths": {
-    "/completions": {
-      "post": {
-        "summary": "Create a completion",
-        "description": "Given a prompt, the model will return one or more predicted completions, and can also return the probabilities of alternative tokens at each position.",
-        "operationId": "createCompletion",
-        "tags": ["Completions"],
-        "security": [
+    "/plants": {
+      "get": {
+        "description": "Returns all plants from the system that the user has access to",
+        "parameters": [
           {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "description": "Completion request parameters",
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateCompletionRequest"
-              },
-              "examples": {
-                "basic": {
-                  "summary": "Basic completion",
-                  "value": {
-                    "model": "openai/gpt-3.5-turbo-instruct",
-                    "prompt": "Say this is a test",
-                    "max_tokens": 7,
-                    "temperature": 0
-                  }
-                },
-                "advanced": {
-                  "summary": "Advanced completion with multiple parameters",
-                  "value": {
-                    "model": "openai/gpt-3.5-turbo-instruct",
-                    "prompt": "Write a haiku about recursion in programming.",
-                    "max_tokens": 100,
-                    "temperature": 0.7,
-                    "top_p": 0.9,
-                    "n": 1,
-                    "stream": false,
-                    "stop": ["\n\n"],
-                    "presence_penalty": 0,
-                    "frequency_penalty": 0.5
-                  }
-                }
-              }
+            "name": "limit",
+            "in": "query",
+            "description": "The maximum number of results to return",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
-            "description": "OK",
+            "description": "Plant response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CreateCompletionResponse"
-                }
-              },
-              "text/event-stream": {
-                "description": "Server-sent events stream (when stream=true)",
-                "schema": {
-                  "type": "string"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Plant"
+                  }
                 }
               }
             }
           },
           "400": {
-            "description": "Bad request",
+            "description": "Unexpected error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "description": "Creates a new plant in the store",
+        "requestBody": {
+          "description": "Plant to add to the store",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewPlant"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "plant response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Plant"
                 }
               }
             }
           },
-          "401": {
-            "description": "Unauthorized",
+          "400": {
+            "description": "unexpected error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
-          },
-          "402": {
-            "description": "Payment required",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
+          }
+        }
+      }
+    },
+    "/plants/{id}": {
+      "delete": {
+        "description": "Deletes a single plant based on the ID supplied",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of plant to delete",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
             }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Plant deleted",
+            "content": {}
           },
-          "429": {
-            "description": "Too many requests",
+          "400": {
+            "description": "unexpected error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -141,297 +130,87 @@
       }
     }
   },
+  "webhooks": {
+    "/plant/webhook": {
+      "post": {
+        "description": "Information about a new plant added to the store",
+        "requestBody": {
+          "description": "Plant added to the store",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewPlant"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Return a 200 status to indicate that the data was received successfully"
+          }
+        }
+      }
+    }
+  },
   "components": {
+    "schemas": {
+      "Plant": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "The name of the plant",
+            "type": "string"
+          },
+          "tag": {
+            "description": "Tag to specify the type",
+            "type": "string"
+          }
+        }
+      },
+      "NewPlant": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Plant"
+          },
+          {
+            "required": [
+              "id"
+            ],
+            "type": "object",
+            "properties": {
+              "id": {
+                "description": "Identification number of the plant",
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          }
+        ]
+      },
+      "Error": {
+        "required": [
+          "error",
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
-        "scheme": "bearer",
-        "description": "Enter your OpenRouter API key"
-      }
-    },
-    "schemas": {
-      "CreateCompletionRequest": {
-        "type": "object",
-        "required": ["model"],
-        "properties": {
-          "model": {
-            "type": "string",
-            "description": "ID of the model to use. You can use the List models API to see all of your available models, or see our Model overview for descriptions of them.",
-            "example": "openai/gpt-3.5-turbo-instruct"
-          },
-          "prompt": {
-            "description": "The prompt(s) to generate completions for, encoded as a string, array of strings, array of tokens, or array of token arrays.",
-            "default": "<|endoftext|>",
-            "nullable": true,
-            "oneOf": [
-              {
-                "type": "string",
-                "example": "This is a test."
-              },
-              {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                },
-                "example": ["This is a test.", "This is another test."]
-              }
-            ]
-          },
-          "best_of": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 20,
-            "default": 1,
-            "nullable": true,
-            "description": "Generates `best_of` completions server-side and returns the \"best\" (the one with the highest log probability per token). Results cannot be streamed."
-          },
-          "echo": {
-            "type": "boolean",
-            "default": false,
-            "nullable": true,
-            "description": "Echo back the prompt in addition to the completion"
-          },
-          "frequency_penalty": {
-            "type": "number",
-            "minimum": -2,
-            "maximum": 2,
-            "default": 0,
-            "nullable": true,
-            "description": "Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
-          },
-          "logit_bias": {
-            "type": "object",
-            "x-oaiTypeLabel": "map",
-            "default": null,
-            "nullable": true,
-            "description": "Modify the likelihood of specified tokens appearing in the completion.\n\nAccepts a json object that maps tokens (specified by their token ID in the GPT tokenizer) to an associated bias value from -100 to 100. You can use this tokenizer tool (which works for both GPT-2 and GPT-3) to convert text to token IDs. Mathematically, the bias is added to the logits generated by the model prior to sampling. The exact effect will vary per model, but values between -1 and 1 should decrease or increase likelihood of selection; values like -100 or 100 should result in a ban or exclusive selection of the relevant token.\n\nAs an example, you can pass `{\"50256\": -100}` to prevent the <|endoftext|> token from being generated."
-          },
-          "logprobs": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 5,
-            "default": null,
-            "nullable": true,
-            "description": "Include the log probabilities on the `logprobs` most likely tokens, as well the chosen tokens. For example, if `logprobs` is 5, the API will return a list of the 5 most likely tokens. The API will always return the `logprob` of the sampled token, so there may be up to `logprobs+1` elements in the response."
-          },
-          "max_tokens": {
-            "type": "integer",
-            "minimum": 0,
-            "default": 16,
-            "nullable": true,
-            "description": "The maximum number of tokens to generate in the completion.\n\nThe token count of your prompt plus `max_tokens` cannot exceed the model's context length."
-          },
-          "n": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 128,
-            "default": 1,
-            "nullable": true,
-            "description": "How many completions to generate for each prompt.\n\n**Note:** Because this parameter generates many completions, it can quickly consume your token quota. Use carefully and ensure that you have reasonable settings for `max_tokens` and `stop`."
-          },
-          "presence_penalty": {
-            "type": "number",
-            "minimum": -2,
-            "maximum": 2,
-            "default": 0,
-            "nullable": true,
-            "description": "Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
-          },
-          "seed": {
-            "type": "integer",
-            "minimum": -9223372036854775808,
-            "maximum": 9223372036854775807,
-            "nullable": true,
-            "description": "If specified, our system will make a best effort to sample deterministically, such that repeated requests with the same `seed` and parameters should return the same result.\n\nDeterminism is not guaranteed, and you should refer to the `system_fingerprint` response parameter to monitor changes in the backend."
-          },
-          "stop": {
-            "description": "Up to 4 sequences where the API will stop generating further tokens. The returned text will not contain the stop sequence.",
-            "default": null,
-            "nullable": true,
-            "oneOf": [
-              {
-                "type": "string",
-                "example": "\n"
-              },
-              {
-                "type": "array",
-                "minItems": 1,
-                "maxItems": 4,
-                "items": {
-                  "type": "string"
-                },
-                "example": ["\n", "Human:", "AI:"]
-              }
-            ]
-          },
-          "stream": {
-            "description": "Whether to stream back partial progress. If set, tokens will be sent as data-only server-sent events as they become available, with the stream terminated by a `data: [DONE]` message.",
-            "type": "boolean",
-            "nullable": true,
-            "default": false
-          },
-          "suffix": {
-            "description": "The suffix that comes after a completion of inserted text.",
-            "default": null,
-            "nullable": true,
-            "type": "string"
-          },
-          "temperature": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 2,
-            "default": 1,
-            "nullable": true,
-            "description": "What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.\n\nWe generally recommend altering this or `top_p` but not both."
-          },
-          "top_p": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 1,
-            "default": 1,
-            "nullable": true,
-            "description": "An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.\n\nWe generally recommend altering this or `temperature` but not both."
-          },
-          "user": {
-            "type": "string",
-            "example": "user-1234",
-            "description": "A unique identifier representing your end-user, which can help OpenRouter to monitor and detect abuse."
-          }
-        }
-      },
-      "CreateCompletionResponse": {
-        "type": "object",
-        "required": ["id", "object", "created", "model", "choices"],
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "A unique identifier for the completion."
-          },
-          "choices": {
-            "type": "array",
-            "description": "The list of completion choices, sorted by their `index`.",
-            "items": {
-              "$ref": "#/components/schemas/CompletionChoice"
-            }
-          },
-          "created": {
-            "type": "integer",
-            "description": "The Unix timestamp (in seconds) of when the completion was created."
-          },
-          "model": {
-            "type": "string",
-            "description": "The model used for completion."
-          },
-          "system_fingerprint": {
-            "type": "string",
-            "description": "This fingerprint represents the backend configuration that the model runs with.\n\nCan be used in conjunction with the `seed` request parameter to understand when backend changes have been made that might impact determinism."
-          },
-          "object": {
-            "type": "string",
-            "enum": ["text_completion"],
-            "description": "The object type, which is always \"text_completion\""
-          },
-          "usage": {
-            "$ref": "#/components/schemas/CompletionUsage"
-          }
-        }
-      },
-      "CompletionChoice": {
-        "type": "object",
-        "required": ["index", "text", "finish_reason"],
-        "properties": {
-          "finish_reason": {
-            "type": "string",
-            "description": "The reason the model stopped generating tokens. This will be `stop` if the model hit a natural stop point or a provided stop sequence, `length` if the maximum number of tokens specified in the request was reached, or `content_filter` if content was omitted due to a flag from our content filters.",
-            "enum": ["stop", "length", "content_filter"]
-          },
-          "index": {
-            "type": "integer",
-            "description": "The index of the choice in the list of choices."
-          },
-          "logprobs": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "text_offset": {
-                "type": "array",
-                "items": {
-                  "type": "integer"
-                }
-              },
-              "token_logprobs": {
-                "type": "array",
-                "items": {
-                  "type": "number"
-                }
-              },
-              "tokens": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "top_logprobs": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "additionalProperties": {
-                    "type": "number"
-                  }
-                }
-              }
-            }
-          },
-          "text": {
-            "type": "string",
-            "description": "The generated text completion."
-          }
-        }
-      },
-      "CompletionUsage": {
-        "type": "object",
-        "description": "Usage statistics for the completion request.",
-        "required": ["completion_tokens", "prompt_tokens", "total_tokens"],
-        "properties": {
-          "completion_tokens": {
-            "type": "integer",
-            "description": "Number of tokens in the generated completion."
-          },
-          "prompt_tokens": {
-            "type": "integer",
-            "description": "Number of tokens in the prompt."
-          },
-          "total_tokens": {
-            "type": "integer",
-            "description": "Total number of tokens used in the request (prompt + completion)."
-          }
-        }
-      },
-      "ErrorResponse": {
-        "type": "object",
-        "required": ["error"],
-        "properties": {
-          "error": {
-            "type": "object",
-            "required": ["message", "type"],
-            "properties": {
-              "code": {
-                "type": "string",
-                "nullable": true
-              },
-              "message": {
-                "type": "string"
-              },
-              "param": {
-                "type": "string",
-                "nullable": true
-              },
-              "type": {
-                "type": "string"
-              }
-            }
-          }
-        }
+        "scheme": "bearer"
       }
     }
   }
