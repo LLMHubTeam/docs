@@ -2,94 +2,56 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Completion",
-[cite_start]"description": "Send a completion request to a selected model (text-only format) [cite: 1]",
-"version": "v1"
-},
-"servers": [
-{
-"url": "https://openrouter.ai/api/v1"
-}
-],
-"paths": {
-"/completions": {
-"post": {
-"summary": "Completion",
-[cite_start]"description": "Send a completion request to a selected model (text-only format) [cite: 1]",
-"security": [
-{
-"BearerAuth": []
-}
-],
-"requestBody": {
-"content": {
-"application/json": {
-"schema": {
-"type": "object",
-"properties": {
-"model": {
-"type": "string"
-},
-"prompt": {
-"type": "string"
-}
-}
-}
-}
-},
-"required": true
-},
-"responses": {
-"default": {
-"description": "Default response"
-}
-}
-}
-}
-},
-"components": {
-"securitySchemes": {
-"BearerAuth": {
-"type": "http",
-"scheme": "bearer"
-}
-}
-},
-"x-code-samples": [
-{
-"lang": "cURL",
-"source": "curl -X POST https://openrouter.ai/api/v1/completions \\\n     -H \"Authorization: Bearer <token>\" \\\n     -H \"Content-Type: application/json\" \\\n     -d '{\n  \"model\": \"string\",\n  \"prompt\": \"string\"\n}'"
-},
-{
-"lang": "Python",
-"source": "import requests\n\nurl = \"https://openrouter.ai/api/v1/completions\"\n\npayload = {\n    \"model\": \"string\",\n    \"prompt\": \"string\"\n}\nheaders = {\n    \"Authorization\": \"Bearer <token>\",\n    \"Content-Type\": \"application/json\"\n}\n\nresponse = requests.post(url, json=payload, headers=headers)\n\nprint(response.json())"
-},
-{
-"lang": "JavaScript",
-"source": "const url = 'https://openrouter.ai/api/v1/completions';\nconst options = {\n  method: 'POST',\n  headers: {Authorization: 'Bearer <token>', 'Content-Type': 'application/json'},\n  body: '{\"model\":\"string\",\"prompt\":\"string\"}'\n};\ntry {\n  const response = await fetch(url, options);\n  const data = await response.json();\n  console.log(data);\n} catch (error) {\n  console.error(error);\n}"
-},
-{
-"lang": "Go",
-"source": "package main\n\nimport (\n\t\"fmt\"\n\t\"strings\"\n\t\"net/http\"\n\t\"io\"\n)\n\nfunc main() {\n\n\turl := \"https://openrouter.ai/api/v1/completions\"\n\n\tpayload := strings.NewReader(\"{\\n  \\\"model\\\": \\\"string\\\",\\n  \\\"prompt\\\": \\\"string\\\"\\n}\")\n\n\treq, _ := http.NewRequest(\"POST\", url, payload)\n\n\treq.Header.Add(\"Authorization\", \"Bearer <token>\")\n\treq.Header.Add(\"Content-Type\", \"application/json\")\n\n\tres, _ := http.DefaultClient.Do(req)\n\n\tdefer res.Body.Close()\n\tbody, _ := io.ReadAll(res.Body)\n\n\tfmt.Println(res)\n\tfmt.Println(string(body))\n\n}"
-},
-{
-"lang": "Ruby",
-"source": "require 'uri'\nrequire 'net/http'\n\nurl = URI(\"https://openrouter.ai/api/v1/completions\")\n\nhttp = Net::HTTP.new(url.host, url.port)\nhttp.use_ssl = true\n\nrequest = Net::HTTP::Post.new(url)\nrequest[\"Authorization\"] = 'Bearer <token>'\nrequest[\"Content-Type\"] = 'application/json'\nrequest.body = \"{\\n  \\\"model\\\": \\\"string\\\",\\n  \\\"prompt\\\": \\\"string\\\"\\n}\"\n\nresponse = http.request(request)\nputs response.read_body"
-},
-{
-"lang": "Java",
-"source": "HttpResponse<String> response = Unirest.post(\"https://openrouter.ai/api/v1/completions\")\n  .header(\"Authorization\", \"Bearer <token>\")\n  .header(\"Content-Type\", \"application/json\")\n  .body(\"{\\n  \\\"model\\\": \\\"string\\\",\\n  \\\"prompt\\\": \\\"string\\\"\\n}\")\n  .asString();\n"
-},
-{
-"lang": "PHP",
-"source": "<?php\n\n$client = new \\GuzzleHttp\\Client();\n\n$response = $client->request('POST', 'https://openrouter.ai/api/v1/completions', [\n  'body' => '{\n  \"model\": \"string\",\n  \"prompt\": \"string\"\n}',\n  'headers' => [\n    'Authorization' => 'Bearer <token>',\n    'Content-Type' => 'application/json',\n  ],\n]);\necho $response->getBody();"
-},
-{
-"lang": "C#",
-"source": "var client = new RestClient(\"https://openrouter.ai/api/v1/completions\");\nvar request = new RestRequest(Method.POST);\nrequest.AddHeader(\"Authorization\", \"Bearer <token>\");\nrequest.AddHeader(\"Content-Type\", \"application/json\");\nrequest.AddParameter(\"application/json\", \"{\\n  \\\"model\\\": \\\"string\\\",\\n  \\\"prompt\\\": \\\"string\\\"\\n}\", ParameterType.RequestBody);\nIRestResponse response = client.Execute(request);"
-},
-{
-"lang": "Swift",
-"source": "import Foundation\n\nlet headers = [\n  \"Authorization\": \"Bearer <token>\",\n  \"Content-Type\": \"application/json\"\n]\nlet parameters = [\n  \"model\": \"string\",\n  \"prompt\": \"string\"\n] as [String : Any]\n\nlet postData = JSONSerialization.data(withJSONObject: parameters, options: [])\n\nlet request = NSMutableURLRequest(url: NSURL(string: \"https://openrouter.ai/api/v1/completions\")! as URL,\n                                        cachePolicy: .useProtocolCachePolicy,\n                      \n              timeoutInterval: 10.0)\nrequest.httpMethod = \"POST\"\nrequest.allHTTPHeaderFields = headers\nrequest.httpBody = postData as Data\n\nlet session = URLSession.shared\nlet dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in\n  if (error != nil) {\n    print(error as Any)\n  } else {\n    let httpResponse = response as? HTTPURLResponse\n    print(httpResponse)\n  }\n})\n\ndataTask.resume()"
-}
-]
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/completions": {
+      "post": {
+        "summary": "Send a completion request to a selected model (text-only format)",
+        "operationId": "completion",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "model": {
+                    "type": "string"
+                  },
+                  "prompt": {
+                    "type": "string"
+                  }
+                },
+                "required": ["model", "prompt"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://openrouter.ai"
+    }
+  ]
 }
