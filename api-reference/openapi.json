@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "OpenRouter AI API",
-    "description": "OpenRouter AI API for accessing various AI models and managing credits",
+    "description": "API for accessing various AI models, managing credits, and interacting with model providers.",
     "version": "1.0.0"
   },
   "servers": [
@@ -21,7 +21,8 @@
       "bearerAuth": {
         "type": "http",
         "scheme": "bearer",
-        "bearerFormat": "JWT"
+        "bearerFormat": "JWT",
+        "description": "JWT token for authenticating API requests."
       }
     },
     "schemas": {
@@ -30,10 +31,12 @@
         "properties": {
           "role": {
             "type": "string",
-            "enum": ["user", "assistant", "system"]
+            "enum": ["user", "assistant", "system"],
+            "description": "The role of the message sender."
           },
           "content": {
-            "type": "string"
+            "type": "string",
+            "description": "The content of the message."
           }
         },
         "required": ["role", "content"]
@@ -43,13 +46,15 @@
         "properties": {
           "model": {
             "type": "string",
-            "example": "openai/gpt-3.5-turbo"
+            "example": "openai/gpt-3.5-turbo",
+            "description": "The ID of the model to use for chat completion."
           },
           "messages": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Message"
-            }
+            },
+            "description": "Array of messages in the conversation."
           }
         },
         "required": ["model", "messages"]
@@ -58,10 +63,12 @@
         "type": "object",
         "properties": {
           "model": {
-            "type": "string"
+            "type": "string",
+            "description": "The ID of the model to use for text completion."
           },
           "prompt": {
-            "type": "string"
+            "type": "string",
+            "description": "The input prompt for text completion."
           }
         },
         "required": ["model", "prompt"]
@@ -71,15 +78,18 @@
         "properties": {
           "amount": {
             "type": "number",
-            "format": "float",
-            "example": 1.1
+            "format": "double",
+            "example": 1.1,
+            "description": "The amount to charge in the cryptocurrency."
           },
           "sender": {
-            "type": "string"
+            "type": "string",
+            "description": "The sender's wallet address."
           },
           "chain_id": {
             "type": "integer",
-            "example": 1
+            "example": 1,
+            "description": "The blockchain network ID (e.g., 1 for Ethereum mainnet)."
           }
         },
         "required": ["amount", "sender", "chain_id"]
@@ -88,53 +98,187 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "Unique identifier for the model."
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Human-readable name of the model."
+          },
+          "created": {
+            "type": "integer",
+            "example": 1741818122,
+            "description": "Timestamp when the model was created."
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "description": "Description of the model's capabilities."
+          },
+          "architecture": {
+            "type": "object",
+            "properties": {
+              "input_modalities": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["text", "image"]
+                },
+                "description": "Types of input the model accepts."
+              },
+              "output_modalities": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["text"]
+                },
+                "description": "Types of output the model produces."
+              },
+              "tokenizer": {
+                "type": "string",
+                "example": "GPT",
+                "description": "The tokenizer used by the model."
+              },
+              "instruct_type": {
+                "type": "string",
+                "description": "Instruction type for the model."
+              }
+            }
+          },
+          "top_provider": {
+            "type": "object",
+            "properties": {
+              "is_moderated": {
+                "type": "boolean",
+                "example": true,
+                "description": "Whether the model is moderated."
+              },
+              "context_length": {
+                "type": "integer",
+                "example": 128000,
+                "description": "Maximum context length supported by the provider."
+              },
+              "max_completion_tokens": {
+                "type": "integer",
+                "example": 16384,
+                "description": "Maximum tokens allowed in the completion."
+              }
+            }
+          },
+          "pricing": {
+            "type": "object",
+            "properties": {
+              "prompt": {
+                "type": "string",
+                "example": "0.0000007",
+                "description": "Cost per prompt token."
+              },
+              "completion": {
+                "type": "string",
+                "example": "0.0000007",
+                "description": "Cost per completion token."
+              },
+              "image": {
+                "type": "string",
+                "example": "0",
+                "description": "Cost per image processed."
+              },
+              "request": {
+                "type": "string",
+                "example": "0",
+                "description": "Cost per request."
+              },
+              "web_search": {
+                "type": "string",
+                "example": "0",
+                "description": "Cost for web search features."
+              },
+              "internal_reasoning": {
+                "type": "string",
+                "example": "0",
+                "description": "Cost for internal reasoning tasks."
+              },
+              "input_cache_read": {
+                "type": "string",
+                "example": "0",
+                "description": "Cost for reading from input cache."
+              },
+              "input_cache_write": {
+                "type": "string",
+                "example": "0",
+                "description": "Cost for writing to input cache."
+              }
+            }
+          },
+          "canonical_slug": {
+            "type": "string",
+            "description": "Canonical slug for the model."
+          },
+          "context_length": {
+            "type": "integer",
+            "example": 128000,
+            "description": "Maximum context length supported by the model."
+          },
+          "hugging_face_id": {
+            "type": "string",
+            "description": "Hugging Face ID for the model, if applicable."
+          },
+          "per_request_limits": {
+            "type": "object",
+            "description": "Limits applied per request."
           },
           "supported_parameters": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Parameters supported by the model."
           }
         }
       },
       "Provider": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string"
-          },
           "name": {
-            "type": "string"
+            "type": "string",
+            "example": "OpenAI",
+            "description": "Name of the provider."
           },
-          "status": {
-            "type": "string"
+          "slug": {
+            "type": "string",
+            "example": "openai",
+            "description": "Unique slug for the provider."
           },
-          "policies": {
-            "type": "object"
+          "privacy_policy_url": {
+            "type": "string",
+            "example": "https://openai.com/policies/privacy-policy/",
+            "description": "URL to the provider's privacy policy."
+          },
+          "terms_of_service_url": {
+            "type": "string",
+            "example": "https://openai.com/policies/row-terms-of-use/",
+            "description": "URL to the provider's terms of service."
+          },
+          "status_page_url": {
+            "type": "string",
+            "example": "https://status.openai.com/",
+            "description": "URL to the provider's status page."
           }
         }
       },
       "Credits": {
         "type": "object",
         "properties": {
-          "total_purchased": {
+          "total_credits": {
             "type": "number",
-            "format": "float"
+            "format": "double",
+            "example": 1.1,
+            "description": "Total credits purchased by the user."
           },
-          "total_used": {
+          "total_usage": {
             "type": "number",
-            "format": "float"
-          },
-          "remaining": {
-            "type": "number",
-            "format": "float"
+            "format": "double",
+            "example": 1.1,
+            "description": "Total credits used by the user."
           }
         }
       },
@@ -142,31 +286,208 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "Unique identifier for the generation."
           },
-          "model": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
+          "total_cost": {
+            "type": "number",
+            "format": "double",
+            "example": 1.1,
+            "description": "Total cost of the generation."
           },
           "created_at": {
             "type": "string",
-            "format": "date-time"
+            "description": "Timestamp when the generation was created."
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for the generation."
+          },
+          "origin": {
+            "type": "string",
+            "description": "Origin of the generation request."
+          },
+          "usage": {
+            "type": "number",
+            "format": "double",
+            "example": 1.1,
+            "description": "Usage cost for the generation."
+          },
+          "is_byok": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether the generation used a bring-your-own-key model."
+          },
+          "upstream_id": {
+            "type": "string",
+            "description": "Upstream provider's ID for the generation."
+          },
+          "cache_discount": {
+            "type": "number",
+            "format": "double",
+            "example": 1.1,
+            "description": "Discount applied due to caching."
+          },
+          "upstream_inference_cost": {
+            "type": "number",
+            "format": "double",
+            "example": 1.1,
+            "description": "Cost of upstream inference."
+          },
+          "app_id": {
+            "type": "integer",
+            "example": 1,
+            "description": "Application ID associated with the generation."
+          },
+          "streamed": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether the generation was streamed."
+          },
+          "cancelled": {
+            "type": "boolean",
+            "example": true,
+            "description": "Whether the generation was cancelled."
+          },
+          "provider_name": {
+            "type": "string",
+            "description": "Name of the provider handling the generation."
+          },
+          "latency": {
+            "type": "integer",
+            "example": 1,
+            "description": "Latency of the generation in milliseconds."
+          },
+          "moderation_latency": {
+            "type": "integer",
+            "example": 1,
+            "description": "Moderation latency in milliseconds."
+          },
+          "generation_time": {
+            "type": "integer",
+            "example": 1,
+            "description": "Time taken to generate the response in milliseconds."
+          },
+          "finish_reason": {
+            "type": "string",
+            "description": "Reason the generation finished."
+          },
+          "native_finish_reason": {
+            "type": "string",
+            "description": "Native provider's reason for finishing."
+          },
+          "tokens_prompt": {
+            "type": "integer",
+            "example": 1,
+            "description": "Number of prompt tokens used."
+          },
+          "tokens_completion": {
+            "type": "integer",
+            "example": 1,
+            "description": "Number of completion tokens generated."
+          },
+          "native_tokens_prompt": {
+            "type": "integer",
+            "example": 1,
+            "description": "Number of native prompt tokens."
+          },
+          "native_tokens_completion": {
+            "type": "integer",
+            "example": 1,
+            "description": "Number of native completion tokens."
+          },
+          "native_tokens_reasoning": {
+            "type": "integer",
+            "example": 1,
+            "description": "Number of tokens used for reasoning."
+          },
+          "num_media_prompt": {
+            "type": "integer",
+            "example": 1,
+            "description": "Number of media items in the prompt."
+          },
+          "num_media_completion": {
+            "type": "integer",
+            "example": 1,
+            "description": "Number of media items in the completion."
+          },
+          "num_search_results": {
+            "type": "integer",
+            "example": 1,
+            "description": "Number of search results included."
           }
         }
       },
       "ModelEndpoint": {
         "type": "object",
         "properties": {
-          "provider": {
-            "type": "string"
+          "name": {
+            "type": "string",
+            "description": "Name of the endpoint."
           },
-          "endpoint": {
-            "type": "string"
+          "context_length": {
+            "type": "number",
+            "format": "double",
+            "example": 1.1,
+            "description": "Maximum context length supported by the endpoint."
+          },
+          "pricing": {
+            "type": "object",
+            "properties": {
+              "request": {
+                "type": "string",
+                "description": "Cost per request."
+              },
+              "image": {
+                "type": "string",
+                "description": "Cost per image processed."
+              },
+              "prompt": {
+                "type": "string",
+                "description": "Cost per prompt token."
+              },
+              "completion": {
+                "type": "string",
+                "description": "Cost per completion token."
+              }
+            }
+          },
+          "provider_name": {
+            "type": "string",
+            "description": "Name of the provider hosting the endpoint."
+          },
+          "supported_parameters": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Parameters supported by the endpoint."
+          },
+          "quantization": {
+            "type": "string",
+            "description": "Quantization method used by the endpoint."
+          },
+          "max_completion_tokens": {
+            "type": "number",
+            "format": "double",
+            "example": 1.1,
+            "description": "Maximum completion tokens allowed."
+          },
+          "max_prompt_tokens": {
+            "type": "number",
+            "format": "double",
+            "example": 1.1,
+            "description": "Maximum prompt tokens allowed."
           },
           "status": {
-            "type": "string"
+            "type": "string",
+            "description": "Current status of the endpoint."
+          },
+          "uptime_last_30m": {
+            "type": "number",
+            "format": "double",
+            "example": 1.1,
+            "description": "Uptime percentage for the last 30 minutes."
           }
         }
       }
@@ -175,8 +496,8 @@
   "paths": {
     "/completion": {
       "post": {
-        "summary": "Completion",
-        "description": "Send a completion request to a selected model (text-only format)",
+        "summary": "Text Completion",
+        "description": "Send a text completion request to a selected model (text-only format).",
         "security": [
           {
             "bearerAuth": []
@@ -190,8 +511,8 @@
                 "$ref": "#/components/schemas/CompletionRequest"
               },
               "example": {
-                "model": "string",
-                "prompt": "string"
+                "model": "openai/gpt-3.5-turbo",
+                "prompt": "Generate a story about a futuristic city."
               }
             }
           }
@@ -205,7 +526,8 @@
                   "type": "object",
                   "properties": {
                     "id": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "Unique identifier for the completion."
                     },
                     "choices": {
                       "type": "array",
@@ -213,13 +535,16 @@
                         "type": "object",
                         "properties": {
                           "text": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "Generated text."
                           },
                           "index": {
-                            "type": "integer"
+                            "type": "integer",
+                            "description": "Index of the choice."
                           },
                           "finish_reason": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "Reason the completion finished."
                           }
                         }
                       }
@@ -234,8 +559,8 @@
     },
     "/chat-completion": {
       "post": {
-        "summary": "Chat completion",
-        "description": "Send a chat completion request to a selected model. The request must contain a \"messages\" array. All advanced options from the base request are also supported.",
+        "summary": "Chat Completion",
+        "description": "Send a chat completion request to a selected model. The request must contain a 'messages' array.",
         "security": [
           {
             "bearerAuth": []
@@ -270,7 +595,8 @@
                   "properties": {
                     "id": {
                       "type": "string",
-                      "example": "gen-12345"
+                      "example": "gen-12345",
+                      "description": "Unique identifier for the chat completion."
                     },
                     "choices": {
                       "type": "array",
@@ -283,65 +609,79 @@
                               "role": {
                                 "type": "string",
                                 "enum": ["assistant"],
-                                "example": "assistant"
+                                "example": "assistant",
+                                "description": "Role of the response message."
                               },
                               "content": {
                                 "type": "string",
-                                "example": "The meaning of life is a complex and subjective question..."
+                                "example": "The meaning of life is a complex and subjective question...",
+                                "description": "Content of the response."
                               },
                               "refusal": {
                                 "type": "string",
-                                "example": ""
+                                "example": "",
+                                "description": "Reason for refusal, if applicable."
                               }
                             }
                           },
                           "logprobs": {
-                            "type": "object"
+                            "type": "object",
+                            "description": "Log probabilities for the response."
                           },
                           "finish_reason": {
                             "type": "string",
-                            "example": "stop"
+                            "example": "stop",
+                            "description": "Reason the completion finished."
                           },
                           "index": {
                             "type": "integer",
-                            "example": 0
+                            "example": 0,
+                            "description": "Index of the choice."
                           }
                         }
                       }
                     },
                     "provider": {
                       "type": "string",
-                      "example": "OpenAI"
+                      "example": "OpenAI",
+                      "description": "Name of the provider handling the request."
                     },
                     "model": {
                       "type": "string",
-                      "example": "openai/gpt-3.5-turbo"
+                      "example": "openai/gpt-3.5-turbo",
+                      "description": "Model used for the completion."
                     },
                     "object": {
                       "type": "string",
-                      "example": "chat.completion"
+                      "example": "chat.completion",
+                      "description": "Type of the response object."
                     },
                     "created": {
                       "type": "integer",
-                      "example": 1735317796
+                      "example": 1735317796,
+                      "description": "Timestamp when the completion was created."
                     },
                     "system_fingerprint": {
-                      "type": "object"
+                      "type": "object",
+                      "description": "System fingerprint for the response."
                     },
                     "usage": {
                       "type": "object",
                       "properties": {
                         "prompt_tokens": {
                           "type": "integer",
-                          "example": 14
+                          "example": 14,
+                          "description": "Number of prompt tokens used."
                         },
                         "completion_tokens": {
                           "type": "integer",
-                          "example": 163
+                          "example": 163,
+                          "description": "Number of completion tokens generated."
                         },
                         "total_tokens": {
                           "type": "integer",
-                          "example": 177
+                          "example": 177,
+                          "description": "Total tokens used."
                         }
                       }
                     }
@@ -355,8 +695,8 @@
     },
     "/get-a-generation": {
       "get": {
-        "summary": "Get a generation",
-        "description": "Returns metadata about a specific generation request",
+        "summary": "Get Generation Metadata",
+        "description": "Returns metadata about a specific generation request.",
         "security": [
           {
             "bearerAuth": []
@@ -370,7 +710,8 @@
             "schema": {
               "type": "string"
             },
-            "example": "id"
+            "description": "Unique identifier of the generation to retrieve.",
+            "example": "gen-12345"
           }
         ],
         "responses": {
@@ -379,7 +720,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Generation"
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Generation"
+                    }
+                  }
                 }
               }
             }
@@ -389,8 +735,8 @@
     },
     "/list-available-models": {
       "get": {
-        "summary": "List available models",
-        "description": "Returns a list of models available through the API. Note: `supported_parameters` is a union of all parameters supported by all providers for this model. There may not be a single provider which offers all of the listed parameters for a model. More documentation available [here](/docs/models).",
+        "summary": "List Available Models",
+        "description": "Returns a list of models available through the API. The `supported_parameters` field is a union of all parameters supported by all providers for each model.",
         "responses": {
           "200": {
             "description": "Successful response",
@@ -415,8 +761,8 @@
     },
     "/list-endpoints-for-a-model": {
       "get": {
-        "summary": "List endpoints for a model",
-        "description": "List endpoints for a specific model",
+        "summary": "List Endpoints for a Model",
+        "description": "Returns a list of endpoints for a specific model, identified by author and slug.",
         "parameters": [
           {
             "name": "author",
@@ -425,7 +771,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "author"
+            "description": "Author or organization of the model."
           },
           {
             "name": "slug",
@@ -434,7 +780,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "slug"
+            "description": "Unique slug identifying the model."
           }
         ],
         "responses": {
@@ -443,9 +789,66 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ModelEndpoint"
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Unique identifier for the model."
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Human-readable name of the model."
+                        },
+                        "created": {
+                          "type": "number",
+                          "format": "double",
+                          "example": 1.1,
+                          "description": "Timestamp when the model was created."
+                        },
+                        "description": {
+                          "type": "string",
+                          "description": "Description of the model."
+                        },
+                        "architecture": {
+                          "type": "object",
+                          "properties": {
+                            "input_modalities": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": ["text", "image"]
+                              },
+                              "description": "Types of input the model accepts."
+                            },
+                            "output_modalities": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": ["text"]
+                              },
+                              "description": "Types of output the model produces."
+                            },
+                            "tokenizer": {
+                              "type": "string",
+                              "description": "Tokenizer used by the model."
+                            },
+                            "instruct_type": {
+                              "type": "string",
+                              "description": "Instruction type for the model."
+                            }
+                          }
+                        },
+                        "endpoints": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ModelEndpoint"
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -456,8 +859,8 @@
     },
     "/list-models-filtered-by-user-provider-preferences": {
       "get": {
-        "summary": "List models filtered by user provider preferences",
-        "description": "Returns a list of models available through the API, filtered based on the user's provider preferences. This endpoint returns the same data structure as `/models` but only includes models from providers that are not in the user's ignored providers list and are either in the user's allowed providers list (if configured) or from any provider (if no allowed providers are specified). These provider preferences can be configured on the /settings page.",
+        "summary": "List Models by User Provider Preferences",
+        "description": "Returns a list of models filtered by the user's provider preferences, configured via the /settings page.",
         "security": [
           {
             "bearerAuth": []
@@ -487,8 +890,8 @@
     },
     "/list-available-providers": {
       "get": {
-        "summary": "List available providers",
-        "description": "Returns a list of providers available through the API with their policies and status information.",
+        "summary": "List Available Providers",
+        "description": "Returns a list of providers available through the API, including their policies and status information.",
         "responses": {
           "200": {
             "description": "Successful response",
@@ -513,8 +916,8 @@
     },
     "/get-credits": {
       "get": {
-        "summary": "Get credits",
-        "description": "Returns the total credits purchased and used for the authenticated user",
+        "summary": "Get User Credits",
+        "description": "Returns the total credits purchased and used for the authenticated user.",
         "security": [
           {
             "bearerAuth": []
@@ -526,7 +929,12 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Credits"
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Credits"
+                    }
+                  }
                 }
               }
             }
@@ -536,8 +944,8 @@
     },
     "/create-a-coinbase-charge": {
       "post": {
-        "summary": "Create a Coinbase charge",
-        "description": "Creates and hydrates a Coinbase Commerce charge for cryptocurrency payments",
+        "summary": "Create Coinbase Charge",
+        "description": "Creates a Coinbase Commerce charge for cryptocurrency payments.",
         "security": [
           {
             "bearerAuth": []
@@ -552,7 +960,7 @@
               },
               "example": {
                 "amount": 1.1,
-                "sender": "string",
+                "sender": "0x1234567890abcdef",
                 "chain_id": 1
               }
             }
@@ -564,7 +972,35 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "addresses": {
+                          "type": "object",
+                          "description": "Cryptocurrency addresses for the charge."
+                        },
+                        "calldata": {
+                          "type": "object",
+                          "description": "Call data for the transaction."
+                        },
+                        "chain_id": {
+                          "type": "integer",
+                          "example": 1,
+                          "description": "Blockchain network ID."
+                        },
+                        "sender": {
+                          "type": "string",
+                          "description": "Sender's wallet address."
+                        },
+                        "id": {
+                          "type": "string",
+                          "description": "Unique identifier for the charge."
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
