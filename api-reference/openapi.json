@@ -1,14 +1,14 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenRouter AI API",
-    "description": "OpenRouter AI API for accessing various AI models and managing credits",
+    "title": "OpenRouter API",
+    "description": "OpenRouter API for accessing various AI models and managing credits",
     "version": "1.0.0"
   },
   "servers": [
     {
       "url": "https://openrouter.ai/api/v1",
-      "description": "Production server"
+      "description": "OpenRouter API server"
     }
   ],
   "security": [
@@ -16,164 +16,8 @@
       "bearerAuth": []
     }
   ],
-  "components": {
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
-      }
-    },
-    "schemas": {
-      "Message": {
-        "type": "object",
-        "properties": {
-          "role": {
-            "type": "string",
-            "enum": ["user", "assistant", "system"]
-          },
-          "content": {
-            "type": "string"
-          }
-        },
-        "required": ["role", "content"]
-      },
-      "ChatCompletionRequest": {
-        "type": "object",
-        "properties": {
-          "model": {
-            "type": "string",
-            "example": "openai/gpt-3.5-turbo"
-          },
-          "messages": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Message"
-            }
-          }
-        },
-        "required": ["model", "messages"]
-      },
-      "CompletionRequest": {
-        "type": "object",
-        "properties": {
-          "model": {
-            "type": "string"
-          },
-          "prompt": {
-            "type": "string"
-          }
-        },
-        "required": ["model", "prompt"]
-      },
-      "CoinbaseChargeRequest": {
-        "type": "object",
-        "properties": {
-          "amount": {
-            "type": "number",
-            "format": "float",
-            "example": 1.1
-          },
-          "sender": {
-            "type": "string"
-          },
-          "chain_id": {
-            "type": "integer",
-            "example": 1
-          }
-        },
-        "required": ["amount", "sender", "chain_id"]
-      },
-      "Model": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "supported_parameters": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "Provider": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "policies": {
-            "type": "object"
-          }
-        }
-      },
-      "Credits": {
-        "type": "object",
-        "properties": {
-          "total_purchased": {
-            "type": "number",
-            "format": "float"
-          },
-          "total_used": {
-            "type": "number",
-            "format": "float"
-          },
-          "remaining": {
-            "type": "number",
-            "format": "float"
-          }
-        }
-      },
-      "Generation": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "model": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "ModelEndpoint": {
-        "type": "object",
-        "properties": {
-          "provider": {
-            "type": "string"
-          },
-          "endpoint": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          }
-        }
-      }
-    }
-  },
   "paths": {
-    "/completions": {
+    "/completion": {
       "post": {
         "summary": "Completion",
         "description": "Send a completion request to a selected model (text-only format)",
@@ -187,7 +31,21 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CompletionRequest"
+                "type": "object",
+                "required": [
+                  "model",
+                  "prompt"
+                ],
+                "properties": {
+                  "model": {
+                    "type": "string",
+                    "example": "string"
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "example": "string"
+                  }
+                }
               },
               "example": {
                 "model": "string",
@@ -202,29 +60,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    },
-                    "choices": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "text": {
-                            "type": "string"
-                          },
-                          "index": {
-                            "type": "integer"
-                          },
-                          "finish_reason": {
-                            "type": "string"
-                          }
-                        }
-                      }
-                    }
-                  }
+                  "type": "object"
                 }
               }
             }
@@ -246,7 +82,40 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ChatCompletionRequest"
+                "type": "object",
+                "required": [
+                  "model",
+                  "messages"
+                ],
+                "properties": {
+                  "model": {
+                    "type": "string",
+                    "example": "openai/gpt-3.5-turbo"
+                  },
+                  "messages": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "role",
+                        "content"
+                      ],
+                      "properties": {
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "user",
+                            "assistant",
+                            "system"
+                          ]
+                        },
+                        "content": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
               },
               "example": {
                 "model": "openai/gpt-3.5-turbo",
@@ -289,9 +158,9 @@
             "in": "query",
             "required": true,
             "schema": {
-              "type": "string"
-            },
-            "example": "id"
+              "type": "string",
+              "example": "id"
+            }
           }
         ],
         "responses": {
@@ -300,7 +169,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Generation"
+                  "type": "object"
                 }
               }
             }
@@ -311,22 +180,14 @@
     "/list-available-models": {
       "get": {
         "summary": "List available models",
-        "description": "Returns a list of models available through the API. Note: `supported_parameters` is a union of all parameters supported by all providers for this model. There may not be a single provider which offers all of the listed parameters for a model. More documentation available [here](/docs/models).",
+        "description": "Returns a list of models available through the API. Note: `supported_parameters` is a union of all parameters supported by all providers for this model. There may not be a single provider which offers all of the listed parameters for a model.",
         "responses": {
           "200": {
             "description": "Successful response",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Model"
-                      }
-                    }
-                  }
+                  "type": "object"
                 }
               }
             }
@@ -337,25 +198,25 @@
     "/list-endpoints-for-a-model": {
       "get": {
         "summary": "List endpoints for a model",
-        "description": "List endpoints for a specific model",
+        "description": "List endpoints for a specific model by author and slug",
         "parameters": [
           {
             "name": "author",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            },
-            "example": "author"
+              "type": "string",
+              "example": "author"
+            }
           },
           {
             "name": "slug",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string"
-            },
-            "example": "slug"
+              "type": "string",
+              "example": "slug"
+            }
           }
         ],
         "responses": {
@@ -364,10 +225,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ModelEndpoint"
-                  }
+                  "type": "object"
                 }
               }
             }
@@ -390,15 +248,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Model"
-                      }
-                    }
-                  }
+                  "type": "object"
                 }
               }
             }
@@ -416,15 +266,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Provider"
-                      }
-                    }
-                  }
+                  "type": "object"
                 }
               }
             }
@@ -447,7 +289,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Credits"
+                  "type": "object"
                 }
               }
             }
@@ -469,7 +311,26 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CoinbaseChargeRequest"
+                "type": "object",
+                "required": [
+                  "amount",
+                  "sender",
+                  "chain_id"
+                ],
+                "properties": {
+                  "amount": {
+                    "type": "number",
+                    "example": 1.1
+                  },
+                  "sender": {
+                    "type": "string",
+                    "example": "string"
+                  },
+                  "chain_id": {
+                    "type": "integer",
+                    "example": 1
+                  }
+                }
               },
               "example": {
                 "amount": 1.1,
@@ -491,6 +352,15 @@
             }
           }
         }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Bearer token authentication"
       }
     }
   }
