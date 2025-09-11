@@ -266,7 +266,86 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "gen-12345"
+                    },
+                    "choices": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "message": {
+                            "type": "object",
+                            "properties": {
+                              "role": {
+                                "type": "string",
+                                "enum": ["assistant"],
+                                "example": "assistant"
+                              },
+                              "content": {
+                                "type": "string",
+                                "example": "The meaning of life is a complex and subjective question..."
+                              },
+                              "refusal": {
+                                "type": "string",
+                                "example": ""
+                              }
+                            }
+                          },
+                          "logprobs": {
+                            "type": "object"
+                          },
+                          "finish_reason": {
+                            "type": "string",
+                            "example": "stop"
+                          },
+                          "index": {
+                            "type": "integer",
+                            "example": 0
+                          }
+                        }
+                      }
+                    },
+                    "provider": {
+                      "type": "string",
+                      "example": "OpenAI"
+                    },
+                    "model": {
+                      "type": "string",
+                      "example": "openai/gpt-3.5-turbo"
+                    },
+                    "object": {
+                      "type": "string",
+                      "example": "chat.completion"
+                    },
+                    "created": {
+                      "type": "integer",
+                      "example": 1735317796
+                    },
+                    "system_fingerprint": {
+                      "type": "object"
+                    },
+                    "usage": {
+                      "type": "object",
+                      "properties": {
+                        "prompt_tokens": {
+                          "type": "integer",
+                          "example": 14
+                        },
+                        "completion_tokens": {
+                          "type": "integer",
+                          "example": 163
+                        },
+                        "total_tokens": {
+                          "type": "integer",
+                          "example": 177
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
