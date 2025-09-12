@@ -2,1011 +2,679 @@
   "openapi": "3.1.0",
   "info": {
     "title": "LLM Hub API",
-    "description": "API for accessing various AI models, managing credits, and interacting with model providers.",
-    "version": "1.0.0"
+    "description": "新一代大模型网关与AI资产管理系统",
+    "version": "1.0.0",
+    "contact": {
+      "name": "LLM Hub Team",
+      "url": "https://github.com/LLMHubTeam/llm-hub"
+    }
   },
   "servers": [
     {
       "url": "https://api.llmhub.com.cn/v1",
-      "description": "Production server"
+      "description": "生产环境"
     }
   ],
-  "security": [
-    {
-      "bearerAuth": []
-    }
-  ],
-  "components": {
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "JWT token for authenticating API requests."
-      }
-    },
-    "schemas": {
-      "Message": {
-        "type": "object",
-        "properties": {
-          "role": {
-            "type": "string",
-            "enum": ["user", "assistant", "system"],
-            "description": "The role of the message sender."
-          },
+  "paths": {
+    "/chat/completions": {
+      "post": {
+        "summary": "OpenAI 对话格式（Chat Completions）",
+        "description": "给定一组包含对话的消息列表，模型将返回一个响应。",
+        "operationId": "createChatCompletion",
+        "requestBody": {
+          "required": true,
           "content": {
-            "type": "string",
-            "description": "The content of the message."
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChatCompletionRequest"
+              },
+              "examples": {
+                "text_example": {
+                  "summary": "基础文本对话",
+                  "value": {
+                    "model": "gpt-5-nano",
+                    "messages": [
+                      {
+                        "role": "developer",
+                        "content": "你是一个有帮助的助手。"
+                      },
+                      {
+                        "role": "user",
+                        "content": "你好！"
+                      }
+                    ]
+                  }
+                },
+                "image_example": {
+                  "summary": "图像分析对话",
+                  "value": {
+                    "model": "gpt-5-nano",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": [
+                          {
+                            "type": "text",
+                            "text": "这张图片里有什么？"
+                          },
+                          {
+                            "type": "image_url",
+                            "image_url": {
+                              "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                            }
+                          }
+                        ]
+                      }
+                    ],
+                    "max_tokens": 300
+                  }
+                },
+                "function_call_example": {
+                  "summary": "函数调用",
+                  "value": {
+                    "model": "gpt-5-nano",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "波士顿今天的天气怎么样？"
+                      }
+                    ],
+                    "tools": [
+                      {
+                        "type": "function",
+                        "function": {
+                          "name": "get_current_weather",
+                          "description": "获取指定位置的当前天气",
+                          "parameters": {
+                            "type": "object",
+                            "properties": {
+                              "location": {
+                                "type": "string",
+                                "description": "城市和州，例如 San Francisco, CA"
+                              },
+                              "unit": {
+                                "type": "string",
+                                "enum": ["celsius", "fahrenheit"]
+                              }
+                            },
+                            "required": ["location"]
+                          }
+                        }
+                      }
+                    ],
+                    "tool_choice": "auto"
+                  }
+                }
+              }
+            }
           }
         },
-        "required": ["role", "content"]
-      },
-      "ChatCompletionRequest": {
+        "responses": {
+          "200": {
+            "description": "成功的响应",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateChatCompletionResponse"
+                },
+                "examples": {
+                  "text_response": {
+                    "summary": "文本对话响应",
+                    "value": {
+                      "id": "chatcmpl-B9MBs8CjcvOU2jLn4n570S5qMJKcT",
+                      "object": "chat.completion",
+                      "created": 1741569952,
+                      "model": "gpt-4.1-2025-04-14",
+                      "choices": [
+                        {
+                          "index": 0,
+                          "message": {
+                            "role": "assistant",
+                            "content": "你好！我能为你提供什么帮助？",
+                            "refusal": null,
+                            "annotations": []
+                          },
+                          "logprobs": null,
+                          "finish_reason": "stop"
+                        }
+                      ],
+                      "usage": {
+                        "prompt_tokens": 19,
+                        "completion_tokens": 10,
+                        "total_tokens": 29,
+                        "prompt_tokens_details": {
+                          "cached_tokens": 0,
+                          "audio_tokens": 0
+                        },
+                        "completion_tokens_details": {
+                          "reasoning_tokens": 0,
+                          "audio_tokens": 0,
+                          "accepted_prediction_tokens": 0,
+                          "rejected_prediction_tokens": 0
+                        }
+                      },
+                      "service_tier": "default"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Chat"]
+      }
+    },
+    "/responses": {
+      "post": {
+        "summary": "OpenAI 响应格式（Responses）",
+        "description": "创建与模型的有状态交互，将先前响应的输出用作输入。",
+        "operationId": "createResponse",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateResponseRequest"
+              },
+              "examples": {
+                "text_example": {
+                  "summary": "基础文本响应",
+                  "value": {
+                    "model": "gpt-5-nano",
+                    "input": "讲一个三句话的关于独角兽的睡前故事。"
+                  }
+                },
+                "image_example": {
+                  "summary": "图像分析响应",
+                  "value": {
+                    "model": "gpt-5-nano",
+                    "input": [
+                      {
+                        "role": "user",
+                        "content": [
+                          {"type": "input_text", "text": "描述这张图片中的内容"},
+                          {
+                            "type": "input_image",
+                            "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功的响应",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateResponseResponse"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["Responses"]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateChatCompletionRequest": {
         "type": "object",
+        "required": ["model", "messages"],
         "properties": {
           "model": {
             "type": "string",
-            "example": "gpt-5",
-            "description": "The ID of the model to use for chat completion."
+            "description": "要使用的模型 ID"
           },
           "messages": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Message"
+              "$ref": "#/components/schemas/ChatCompletionMessage"
             },
-            "description": "Array of messages in the conversation."
-          }
-        },
-        "required": ["model", "messages"]
-      },
-      "CompletionRequest": {
-        "type": "object",
-        "properties": {
-          "model": {
-            "type": "string",
-            "description": "The ID of the model to use for text completion."
+            "description": "到目前为止包含对话的消息列表"
           },
-          "prompt": {
-            "type": "string",
-            "description": "The input prompt for text completion."
-          }
-        },
-        "required": ["model", "prompt"]
-      },
-      "CoinbaseChargeRequest": {
-        "type": "object",
-        "properties": {
-          "amount": {
+          "temperature": {
             "type": "number",
-            "format": "double",
-            "example": 1.1,
-            "description": "The amount to charge in the cryptocurrency."
+            "minimum": 0,
+            "maximum": 2,
+            "default": 1,
+            "description": "要使用的采样温度，介于 0 和 2 之间"
           },
-          "sender": {
-            "type": "string",
-            "description": "The sender's wallet address."
+          "top_p": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 1,
+            "description": "一种替代采样温度的方法，称为核采样"
           },
-          "chain_id": {
+          "n": {
             "type": "integer",
-            "example": 1,
-            "description": "The blockchain network ID (e.g., 1 for Ethereum mainnet)."
-          }
-        },
-        "required": ["amount", "sender", "chain_id"]
-      },
-      "Model": {
-        "type": "object",
-        "properties": {
-          "id": {
+            "minimum": 1,
+            "default": 1,
+            "description": "为每个输入消息生成多少个聊天补全选择"
+          },
+          "stream": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否使用服务器发送事件流式传输响应"
+          },
+          "stop": {
+            "oneOf": [
+              {"type": "string"},
+              {"type": "array", "items": {"type": "string"}}
+            ],
+            "description": "API 将停止生成更多标记的最多 4 个序列"
+          },
+          "max_tokens": {
+            "type": "integer",
+            "description": "聊天补全中可以生成的最大标记数"
+          },
+          "presence_penalty": {
+            "type": "number",
+            "minimum": -2,
+            "maximum": 2,
+            "default": 0,
+            "description": "介于 -2.0 和 2.0 之间的数字"
+          },
+          "frequency_penalty": {
+            "type": "number",
+            "minimum": -2,
+            "maximum": 2,
+            "default": 0,
+            "description": "介于 -2.0 和 2.0 之间的数字"
+          },
+          "logit_bias": {
+            "type": "object",
+            "description": "修改指定标记出现在补全中的可能性"
+          },
+          "user": {
             "type": "string",
-            "description": "Unique identifier for the model."
+            "description": "表示最终用户的唯一标识符"
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatCompletionTool"
+            },
+            "description": "模型可能调用的工具列表"
+          },
+          "tool_choice": {
+            "oneOf": [
+              {"type": "string", "enum": ["none", "auto", "required"]},
+              {
+                "type": "object",
+                "properties": {
+                  "type": {"type": "string", "enum": ["function"]},
+                  "function": {
+                    "type": "object",
+                    "properties": {
+                      "name": {"type": "string"}
+                    },
+                    "required": ["name"]
+                  }
+                },
+                "required": ["type", "function"]
+              }
+            ],
+            "description": "控制模型调用哪个工具"
+          }
+        }
+      },
+      "ChatCompletionMessage": {
+        "type": "object",
+        "required": ["role"],
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": ["system", "user", "assistant", "tool", "developer"],
+            "description": "消息作者的角色"
+          },
+          "content": {
+            "oneOf": [
+              {"type": "string"},
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {"$ref": "#/components/schemas/TextContentPart"},
+                    {"$ref": "#/components/schemas/ImageContentPart"}
+                  ]
+                }
+              }
+            ],
+            "description": "消息的内容"
           },
           "name": {
             "type": "string",
-            "description": "Human-readable name of the model."
+            "description": "参与者的可选名称"
           },
-          "created": {
-            "type": "integer",
-            "example": 1741818122,
-            "description": "Timestamp when the model was created."
+          "tool_calls": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatCompletionMessageToolCall"
+            },
+            "description": "模型生成的工具调用"
+          },
+          "tool_call_id": {
+            "type": "string",
+            "description": "此消息响应的工具调用"
+          }
+        }
+      },
+      "TextContentPart": {
+        "type": "object",
+        "required": ["type", "text"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["text"],
+            "description": "内容部分的类型"
+          },
+          "text": {
+            "type": "string",
+            "description": "文本内容"
+          }
+        }
+      },
+      "ImageContentPart": {
+        "type": "object",
+        "required": ["type", "image_url"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["image_url"],
+            "description": "内容部分的类型"
+          },
+          "image_url": {
+            "type": "object",
+            "required": ["url"],
+            "properties": {
+              "url": {
+                "type": "string",
+                "description": "图像的URL或base64编码的图像数据"
+              },
+              "detail": {
+                "type": "string",
+                "enum": ["auto", "low", "high"],
+                "default": "auto",
+                "description": "指定图像的详细级别"
+              }
+            }
+          }
+        }
+      },
+      "ChatCompletionTool": {
+        "type": "object",
+        "required": ["type", "function"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["function"],
+            "description": "工具的类型"
+          },
+          "function": {
+            "$ref": "#/components/schemas/FunctionObject"
+          }
+        }
+      },
+      "FunctionObject": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "要调用的函数名称"
           },
           "description": {
             "type": "string",
-            "description": "Description of the model's capabilities."
+            "description": "函数功能的描述"
           },
-          "architecture": {
+          "parameters": {
             "type": "object",
-            "properties": {
-              "input_modalities": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "enum": ["text", "image"]
-                },
-                "description": "Types of input the model accepts."
-              },
-              "output_modalities": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "enum": ["text"]
-                },
-                "description": "Types of output the model produces."
-              },
-              "tokenizer": {
-                "type": "string",
-                "example": "GPT",
-                "description": "The tokenizer used by the model."
-              },
-              "instruct_type": {
-                "type": "string",
-                "description": "Instruction type for the model."
-              }
-            }
-          },
-          "top_provider": {
-            "type": "object",
-            "properties": {
-              "is_moderated": {
-                "type": "boolean",
-                "example": true,
-                "description": "Whether the model is moderated."
-              },
-              "context_length": {
-                "type": "integer",
-                "example": 128000,
-                "description": "Maximum context length supported by the provider."
-              },
-              "max_completion_tokens": {
-                "type": "integer",
-                "example": 16384,
-                "description": "Maximum tokens allowed in the completion."
-              }
-            }
-          },
-          "pricing": {
-            "type": "object",
-            "properties": {
-              "prompt": {
-                "type": "string",
-                "example": "0.0000007",
-                "description": "Cost per prompt token."
-              },
-              "completion": {
-                "type": "string",
-                "example": "0.0000007",
-                "description": "Cost per completion token."
-              },
-              "image": {
-                "type": "string",
-                "example": "0",
-                "description": "Cost per image processed."
-              },
-              "request": {
-                "type": "string",
-                "example": "0",
-                "description": "Cost per request."
-              },
-              "web_search": {
-                "type": "string",
-                "example": "0",
-                "description": "Cost for web search features."
-              },
-              "internal_reasoning": {
-                "type": "string",
-                "example": "0",
-                "description": "Cost for internal reasoning tasks."
-              },
-              "input_cache_read": {
-                "type": "string",
-                "example": "0",
-                "description": "Cost for reading from input cache."
-              },
-              "input_cache_write": {
-                "type": "string",
-                "example": "0",
-                "description": "Cost for writing to input cache."
-              }
-            }
-          },
-          "canonical_slug": {
-            "type": "string",
-            "description": "Canonical slug for the model."
-          },
-          "context_length": {
-            "type": "integer",
-            "example": 128000,
-            "description": "Maximum context length supported by the model."
-          },
-          "hugging_face_id": {
-            "type": "string",
-            "description": "Hugging Face ID for the model, if applicable."
-          },
-          "per_request_limits": {
-            "type": "object",
-            "description": "Limits applied per request."
-          },
-          "supported_parameters": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Parameters supported by the model."
+            "description": "函数接受的参数，描述为JSON Schema对象"
           }
         }
       },
-      "Provider": {
+      "ChatCompletionMessageToolCall": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "OpenAI",
-            "description": "Name of the provider."
-          },
-          "slug": {
-            "type": "string",
-            "example": "openai",
-            "description": "Unique slug for the provider."
-          },
-          "privacy_policy_url": {
-            "type": "string",
-            "example": "https://openai.com/policies/privacy-policy/",
-            "description": "URL to the provider's privacy policy."
-          },
-          "terms_of_service_url": {
-            "type": "string",
-            "example": "https://openai.com/policies/row-terms-of-use/",
-            "description": "URL to the provider's terms of service."
-          },
-          "status_page_url": {
-            "type": "string",
-            "example": "https://status.openai.com/",
-            "description": "URL to the provider's status page."
-          }
-        }
-      },
-      "Credits": {
-        "type": "object",
-        "properties": {
-          "total_credits": {
-            "type": "number",
-            "format": "double",
-            "example": 1.1,
-            "description": "Total credits purchased by the user."
-          },
-          "total_usage": {
-            "type": "number",
-            "format": "double",
-            "example": 1.1,
-            "description": "Total credits used by the user."
-          }
-        }
-      },
-      "Generation": {
-        "type": "object",
+        "required": ["id", "type", "function"],
         "properties": {
           "id": {
             "type": "string",
-            "description": "Unique identifier for the generation."
+            "description": "工具调用的ID"
           },
-          "total_cost": {
-            "type": "number",
-            "format": "double",
-            "example": 1.1,
-            "description": "Total cost of the generation."
-          },
-          "created_at": {
+          "type": {
             "type": "string",
-            "description": "Timestamp when the generation was created."
+            "enum": ["function"],
+            "description": "工具的类型"
           },
-          "model": {
-            "type": "string",
-            "description": "Model used for the generation."
-          },
-          "origin": {
-            "type": "string",
-            "description": "Origin of the generation request."
-          },
-          "usage": {
-            "type": "number",
-            "format": "double",
-            "example": 1.1,
-            "description": "Usage cost for the generation."
-          },
-          "is_byok": {
-            "type": "boolean",
-            "example": true,
-            "description": "Whether the generation used a bring-your-own-key model."
-          },
-          "upstream_id": {
-            "type": "string",
-            "description": "Upstream provider's ID for the generation."
-          },
-          "cache_discount": {
-            "type": "number",
-            "format": "double",
-            "example": 1.1,
-            "description": "Discount applied due to caching."
-          },
-          "upstream_inference_cost": {
-            "type": "number",
-            "format": "double",
-            "example": 1.1,
-            "description": "Cost of upstream inference."
-          },
-          "app_id": {
-            "type": "integer",
-            "example": 1,
-            "description": "Application ID associated with the generation."
-          },
-          "streamed": {
-            "type": "boolean",
-            "example": true,
-            "description": "Whether the generation was streamed."
-          },
-          "cancelled": {
-            "type": "boolean",
-            "example": true,
-            "description": "Whether the generation was cancelled."
-          },
-          "provider_name": {
-            "type": "string",
-            "description": "Name of the provider handling the generation."
-          },
-          "latency": {
-            "type": "integer",
-            "example": 1,
-            "description": "Latency of the generation in milliseconds."
-          },
-          "moderation_latency": {
-            "type": "integer",
-            "example": 1,
-            "description": "Moderation latency in milliseconds."
-          },
-          "generation_time": {
-            "type": "integer",
-            "example": 1,
-            "description": "Time taken to generate the response in milliseconds."
-          },
-          "finish_reason": {
-            "type": "string",
-            "description": "Reason the generation finished."
-          },
-          "native_finish_reason": {
-            "type": "string",
-            "description": "Native provider's reason for finishing."
-          },
-          "tokens_prompt": {
-            "type": "integer",
-            "example": 1,
-            "description": "Number of prompt tokens used."
-          },
-          "tokens_completion": {
-            "type": "integer",
-            "example": 1,
-            "description": "Number of completion tokens generated."
-          },
-          "native_tokens_prompt": {
-            "type": "integer",
-            "example": 1,
-            "description": "Number of native prompt tokens."
-          },
-          "native_tokens_completion": {
-            "type": "integer",
-            "example": 1,
-            "description": "Number of native completion tokens."
-          },
-          "native_tokens_reasoning": {
-            "type": "integer",
-            "example": 1,
-            "description": "Number of tokens used for reasoning."
-          },
-          "num_media_prompt": {
-            "type": "integer",
-            "example": 1,
-            "description": "Number of media items in the prompt."
-          },
-          "num_media_completion": {
-            "type": "integer",
-            "example": 1,
-            "description": "Number of media items in the completion."
-          },
-          "num_search_results": {
-            "type": "integer",
-            "example": 1,
-            "description": "Number of search results included."
+          "function": {
+            "type": "object",
+            "required": ["name", "arguments"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "要调用的函数的名称"
+              },
+              "arguments": {
+                "type": "string",
+                "description": "用于调用函数的参数，由模型以JSON格式生成"
+              }
+            }
           }
         }
       },
-      "ModelEndpoint": {
+      "CreateChatCompletionResponse": {
         "type": "object",
+        "required": ["id", "object", "created", "model", "choices"],
         "properties": {
-          "name": {
+          "id": {
             "type": "string",
-            "description": "Name of the endpoint."
+            "description": "响应的唯一标识符"
           },
-          "context_length": {
-            "type": "number",
-            "format": "double",
-            "example": 1.1,
-            "description": "Maximum context length supported by the endpoint."
+          "object": {
+            "type": "string",
+            "description": "对象类型"
           },
-          "pricing": {
-            "type": "object",
-            "properties": {
-              "request": {
-                "type": "string",
-                "description": "Cost per request."
-              },
-              "image": {
-                "type": "string",
-                "description": "Cost per image processed."
-              },
-              "prompt": {
-                "type": "string",
-                "description": "Cost per prompt token."
-              },
-              "completion": {
-                "type": "string",
-                "description": "Cost per completion token."
+          "created": {
+            "type": "integer",
+            "description": "响应创建时间戳"
+          },
+          "model": {
+            "type": "string",
+            "description": "使用的模型名称"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["index", "message", "finish_reason"],
+              "properties": {
+                "index": {
+                  "type": "integer"
+                },
+                "message": {
+                  "$ref": "#/components/schemas/ChatCompletionMessage"
+                },
+                "logprobs": {
+                  "type": "object",
+                  "nullable": true
+                },
+                "finish_reason": {
+                  "type": "string",
+                  "enum": ["stop", "length", "tool_calls", "content_filter"]
+                }
               }
             }
           },
-          "provider_name": {
-            "type": "string",
-            "description": "Name of the provider hosting the endpoint."
-          },
-          "supported_parameters": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Parameters supported by the endpoint."
-          },
-          "quantization": {
-            "type": "string",
-            "description": "Quantization method used by the endpoint."
-          },
-          "max_completion_tokens": {
-            "type": "number",
-            "format": "double",
-            "example": 1.1,
-            "description": "Maximum completion tokens allowed."
-          },
-          "max_prompt_tokens": {
-            "type": "number",
-            "format": "double",
-            "example": 1.1,
-            "description": "Maximum prompt tokens allowed."
-          },
-          "status": {
-            "type": "string",
-            "description": "Current status of the endpoint."
-          },
-          "uptime_last_30m": {
-            "type": "number",
-            "format": "double",
-            "example": 1.1,
-            "description": "Uptime percentage for the last 30 minutes."
+          "usage": {
+            "type": "object",
+            "properties": {
+              "prompt_tokens": {
+                "type": "integer"
+              },
+              "completion_tokens": {
+                "type": "integer"
+              },
+              "total_tokens": {
+                "type": "integer"
+              }
+            }
           }
         }
+      },
+      "CreateResponseRequest": {
+        "type": "object",
+        "required": ["model", "input"],
+        "properties": {
+          "model": {
+            "type": "string",
+            "description": "用于生成响应的模型ID"
+          },
+          "input": {
+            "oneOf": [
+              {"type": "string"},
+              {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/InputMessage"
+                }
+              }
+            ],
+            "description": "提供给模型的文本、图像或文件输入"
+          },
+          "instructions": {
+            "type": "string",
+            "description": "作为模型上下文中的第一项插入系统消息"
+          },
+          "stream": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否流式传输响应"
+          },
+          "tools": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResponseTool"
+            },
+            "description": "模型在生成响应时可能调用的工具数组"
+          }
+        }
+      },
+      "InputMessage": {
+        "type": "object",
+        "required": ["role", "content"],
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": ["user", "assistant", "system", "developer"]
+          },
+          "content": {
+            "oneOf": [
+              {"type": "string"},
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {"$ref": "#/components/schemas/InputTextContent"},
+                    {"$ref": "#/components/schemas/InputImageContent"}
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      },
+      "InputTextContent": {
+        "type": "object",
+        "required": ["type", "text"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["input_text"]
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      },
+      "InputImageContent": {
+        "type": "object",
+        "required": ["type", "image_url"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["input_image"]
+          },
+          "image_url": {
+            "type": "string"
+          }
+        }
+      },
+      "ResponseTool": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["function", "file_search", "web_search_preview"]
+          },
+          "function": {
+            "$ref": "#/components/schemas/FunctionObject"
+          }
+        }
+      },
+      "CreateResponseResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "integer"
+          },
+          "model": {
+            "type": "string"
+          },
+          "output": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "API密钥需要以Bearer开头，例如：Bearer YOUR_API_KEY"
       }
     }
   },
-  "paths": {
-    "/completion": {
-      "post": {
-        "summary": "Text Completion",
-        "description": "Send a text completion request to a selected model (text-only format).",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CompletionRequest"
-              },
-              "example": {
-                "model": "openai/gpt-3.5-turbo",
-                "prompt": "Generate a story about a futuristic city."
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "description": "Unique identifier for the completion."
-                    },
-                    "choices": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "text": {
-                            "type": "string",
-                            "description": "Generated text."
-                          },
-                          "index": {
-                            "type": "integer",
-                            "description": "Index of the choice."
-                          },
-                          "finish_reason": {
-                            "type": "string",
-                            "description": "Reason the completion finished."
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/chat-completion": {
-      "post": {
-        "summary": "Chat Completion",
-        "description": "Send a chat completion request to a selected model. The request must contain a 'messages' array.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChatCompletionRequest"
-              },
-              "example": {
-                "model": "openai/gpt-3.5-turbo",
-                "messages": [
-                  {
-                    "role": "user",
-                    "content": "What is the meaning of life?"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string",
-                      "example": "gen-12345",
-                      "description": "Unique identifier for the chat completion."
-                    },
-                    "choices": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "message": {
-                            "type": "object",
-                            "properties": {
-                              "role": {
-                                "type": "string",
-                                "enum": ["assistant"],
-                                "example": "assistant",
-                                "description": "Role of the response message."
-                              },
-                              "content": {
-                                "type": "string",
-                                "example": "The meaning of life is a complex and subjective question...",
-                                "description": "Content of the response."
-                              },
-                              "refusal": {
-                                "type": "string",
-                                "example": "",
-                                "description": "Reason for refusal, if applicable."
-                              }
-                            }
-                          },
-                          "logprobs": {
-                            "type": "object",
-                            "description": "Log probabilities for the response."
-                          },
-                          "finish_reason": {
-                            "type": "string",
-                            "example": "stop",
-                            "description": "Reason the completion finished."
-                          },
-                          "index": {
-                            "type": "integer",
-                            "example": 0,
-                            "description": "Index of the choice."
-                          }
-                        }
-                      }
-                    },
-                    "provider": {
-                      "type": "string",
-                      "example": "OpenAI",
-                      "description": "Name of the provider handling the request."
-                    },
-                    "model": {
-                      "type": "string",
-                      "example": "openai/gpt-3.5-turbo",
-                      "description": "Model used for the completion."
-                    },
-                    "object": {
-                      "type": "string",
-                      "example": "chat.completion",
-                      "description": "Type of the response object."
-                    },
-                    "created": {
-                      "type": "integer",
-                      "example": 1735317796,
-                      "description": "Timestamp when the completion was created."
-                    },
-                    "system_fingerprint": {
-                      "type": "object",
-                      "description": "System fingerprint for the response."
-                    },
-                    "usage": {
-                      "type": "object",
-                      "properties": {
-                        "prompt_tokens": {
-                          "type": "integer",
-                          "example": 14,
-                          "description": "Number of prompt tokens used."
-                        },
-                        "completion_tokens": {
-                          "type": "integer",
-                          "example": 163,
-                          "description": "Number of completion tokens generated."
-                        },
-                        "total_tokens": {
-                          "type": "integer",
-                          "example": 177,
-                          "description": "Total tokens used."
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/get-a-generation": {
-      "get": {
-        "summary": "Get Generation Metadata",
-        "description": "Returns metadata about a specific generation request.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Unique identifier of the generation to retrieve.",
-            "example": "gen-12345"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/Generation"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/list-available-models": {
-      "get": {
-        "summary": "List Available Models",
-        "description": "Returns a list of models available through the API. The `supported_parameters` field is a union of all parameters supported by all providers for each model.",
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Model"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/list-endpoints-for-a-model": {
-      "get": {
-        "summary": "List Endpoints for a Model",
-        "description": "Returns a list of endpoints for a specific model, identified by author and slug.",
-        "parameters": [
-          {
-            "name": "author",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Author or organization of the model."
-          },
-          {
-            "name": "slug",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Unique slug identifying the model."
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string",
-                          "description": "Unique identifier for the model."
-                        },
-                        "name": {
-                          "type": "string",
-                          "description": "Human-readable name of the model."
-                        },
-                        "created": {
-                          "type": "number",
-                          "format": "double",
-                          "example": 1.1,
-                          "description": "Timestamp when the model was created."
-                        },
-                        "description": {
-                          "type": "string",
-                          "description": "Description of the model."
-                        },
-                        "architecture": {
-                          "type": "object",
-                          "properties": {
-                            "input_modalities": {
-                              "type": "array",
-                              "items": {
-                                "type": "string",
-                                "enum": ["text", "image"]
-                              },
-                              "description": "Types of input the model accepts."
-                            },
-                            "output_modalities": {
-                              "type": "array",
-                              "items": {
-                                "type": "string",
-                                "enum": ["text"]
-                              },
-                              "description": "Types of output the model produces."
-                            },
-                            "tokenizer": {
-                              "type": "string",
-                              "description": "Tokenizer used by the model."
-                            },
-                            "instruct_type": {
-                              "type": "string",
-                              "description": "Instruction type for the model."
-                            }
-                          }
-                        },
-                        "endpoints": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/ModelEndpoint"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/list-models-filtered-by-user-provider-preferences": {
-      "get": {
-        "summary": "List Models by User Provider Preferences",
-        "description": "Returns a list of models filtered by the user's provider preferences, configured via the /settings page.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Model"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/list-available-providers": {
-      "get": {
-        "summary": "List Available Providers",
-        "description": "Returns a list of providers available through the API, including their policies and status information.",
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Provider"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/get-credits": {
-      "get": {
-        "summary": "Get User Credits",
-        "description": "Returns the total credits purchased and used for the authenticated user.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "$ref": "#/components/schemas/Credits"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/create-a-coinbase-charge": {
-      "post": {
-        "summary": "Create Coinbase Charge",
-        "description": "Creates a Coinbase Commerce charge for cryptocurrency payments.",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CoinbaseChargeRequest"
-              },
-              "example": {
-                "amount": 1.1,
-                "sender": "0x1234567890abcdef",
-                "chain_id": 1
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "addresses": {
-                          "type": "object",
-                          "description": "Cryptocurrency addresses for the charge."
-                        },
-                        "calldata": {
-                          "type": "object",
-                          "description": "Call data for the transaction."
-                        },
-                        "chain_id": {
-                          "type": "integer",
-                          "example": 1,
-                          "description": "Blockchain network ID."
-                        },
-                        "sender": {
-                          "type": "string",
-                          "description": "Sender's wallet address."
-                        },
-                        "id": {
-                          "type": "string",
-                          "description": "Unique identifier for the charge."
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+  "security": [
+    {
+      "ApiKeyAuth": []
     }
-  }
+  ],
+  "tags": [
+    {
+      "name": "Chat",
+      "description": "聊天补全相关接口"
+    },
+    {
+      "name": "Responses",
+      "description": "响应相关接口"
+    }
+  ]
 }
