@@ -33,11 +33,17 @@
               "api-reference/authentication",
               "api-reference/parameters",
               "api-reference/errors",
-              "api-reference/chat-completion",
-              "api-reference/responses",
-              "api-reference/chat/chat-completion.mdx",
-              "api-reference/chat/responses.mdx",
-              "api-reference/chat/messages.mdx"
+              {
+                "group": "Chat API",
+                "icon": "chat",
+                "pages": [
+                  "api-reference/chat-completion",
+                  "api-reference/responses",
+                  "api-reference/chat/chat-completion.mdx",
+                  "api-reference/chat/responses.mdx",
+                  "api-reference/chat/messages.mdx"
+                ]
+              }
             ]
           },
           {
