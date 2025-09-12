@@ -35,6 +35,7 @@
               "api-reference/errors",
               "api-reference/completion",
               "api-reference/chat-completion",
+              "api-reference/responses",
               "api-reference/get-a-generation",
               "api-reference/list-available-models",
               "api-reference/list-endpoints-for-a-model",
