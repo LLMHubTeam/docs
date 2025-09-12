@@ -34,7 +34,10 @@
               "api-reference/parameters",
               "api-reference/errors",
               "api-reference/chat-completion",
-              "api-reference/responses"
+              "api-reference/responses",
+              "api-reference/chat/chat-completion.mdx",
+              "api-reference/chat/responses.mdx",
+              "api-reference/chat/messages.mdx"
             ]
           },
           {
