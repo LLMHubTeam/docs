@@ -33,24 +33,8 @@
               "api-reference/authentication",
               "api-reference/parameters",
               "api-reference/errors",
-              "api-reference/completion",
               "api-reference/chat-completion",
-              "api-reference/responses",
-              "api-reference/get-a-generation",
-              "api-reference/list-available-models",
-              "api-reference/list-endpoints-for-a-model",
-              "api-reference/list-models-filtered-by-user-provider-preferences",
-              "api-reference/list-available-providers",
-              "api-reference/get-credits",
-              "api-reference/create-a-coinbase-charge",
-              "api-reference/analytics/get-activity",
-              "api-reference/authentication/exchange-authorization-code-for-api-key",
-              "api-reference/api-keys/get-current-api-key",
-              "api-reference/api-keys/list-api-keys",
-              "api-reference/api-keys/create-api-key",
-              "api-reference/api-keys/get-api-key",
-              "api-reference/api-keys/delete-api-key",
-              "api-reference/api-keys/update-api-key"
+              "api-reference/responses"
             ]
           },
           {
