@@ -144,7 +144,7 @@ LLM Hub allows you to specify some optional headers to identify your app and mak
 fetch('https://openrouter.ai/api/v1/chat/completions', {
 method: 'POST',
 headers: {
-Authorization: 'Bearer <OPENROUTER_API_KEY>',
+Authorization: 'Bearer <LLM_Hub_API_KEY>',
 'HTTP-Referer': '<YOUR_SITE_URL>', // Optional. Site URL for rankings on openrouter.ai.
 'X-Title': '<YOUR_SITE_NAME>', // Optional. Site title for rankings on openrouter.ai.
 'Content-Type': 'application/json',
@@ -198,7 +198,7 @@ To use this features, simply include a message with `role: "assistant"` at the e
 fetch('https://openrouter.ai/api/v1/chat/completions', {
 method: 'POST',
 headers: {
-Authorization: 'Bearer <OPENROUTER_API_KEY>',
+Authorization: 'Bearer <LLM_Hub_API_KEY>',
 'Content-Type': 'application/json',
 },
 body: JSON.stringify({

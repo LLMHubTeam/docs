@@ -3,7 +3,7 @@ title: "OpenAI Chat Completions"
 ---
 
 <Info>
-    **"官方文档"**
+    **官方文档**
     - [OpenAI Chat Completions](https://platform.openai.com/docs/api-reference/chat)
 </Info>
 
@@ -18,7 +18,7 @@ title: "OpenAI Chat Completions"
 ```bash
 curl https://api.llmhub.com.cn/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $NEWAPI_API_KEY" \
+  -H "Authorization: Bearer $LLM_Hub_API_KEY" \
   -d '{
     "model": "gpt-5",
     "messages": [
@@ -79,7 +79,7 @@ curl https://api.llmhub.com.cn/v1/chat/completions \
 ```bash
 curl https://api.llmhub.com.cn/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $NEWAPI_API_KEY" \
+  -H "Authorization: Bearer $LLM_Hub_API_KEY" \
   -d '{
     "model": "gpt-5",
     "messages": [
@@ -149,7 +149,7 @@ curl https://api.llmhub.com.cn/v1/chat/completions \
 ```bash
 curl https://api.llmhub.com.cn/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $NEWAPI_API_KEY" \
+  -H "Authorization: Bearer $LLM_Hub_API_KEY" \
   -d '{
     "model": "gpt-5",
     "messages": [
@@ -183,7 +183,7 @@ curl https://api.llmhub.com.cn/v1/chat/completions \
 ```bash
 curl https://api.llmhub.com.cn/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $NEWAPI_API_KEY" \
+  -H "Authorization: Bearer $LLM_Hub_API_KEY" \
   -d '{
     "model": "gpt-5",
     "messages": [
@@ -266,7 +266,7 @@ curl https://api.llmhub.com.cn/v1/chat/completions \
 ```bash
 curl https://api.llmhub.com.cn/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $NEWAPI_API_KEY" \
+  -H "Authorization: Bearer $LLM_Hub_API_KEY" \
   -d '{
     "model": "gpt-5",
     "messages": [
@@ -489,10 +489,10 @@ POST /v1/chat/completions
 在请求头中包含以下内容进行 API 密钥认证：
 
 ```
-Authorization: Bearer $NEWAPI_API_KEY
+Authorization: Bearer $LLM_Hub_API_KEY
 ```
 
-其中 `$NEWAPI_API_KEY` 是您的 API 密钥。您可以在 OpenAI 平台的 API 密钥页面中找到或生成 API 密钥。
+其中 `$LLM_Hub_API_KEY` 是您的 API 密钥。您可以在 OpenAI 平台的 API 密钥页面中找到或生成 API 密钥。
 
 ### 请求体参数
 

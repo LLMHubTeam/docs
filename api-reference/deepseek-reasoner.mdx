@@ -3,7 +3,7 @@ title: "Deepseek Reasoning"
 ---
 
 <Info>
-    **"官方文档"**
+    **官方文档**
     - [推理模型 (deepseek-reasoner)](https://api-docs.deepseek.com/zh-cn/guides/reasoning_model)
 </Info>
 
@@ -18,7 +18,7 @@ Deepseek-reasoner 是 DeepSeek 推出的推理模型。在输出最终回答之�
 ```bash
 curl https://api.deepseek.com/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $NEWAPI_API_KEY" \
+  -H "Authorization: Bearer $LLM_Hub_API_KEY" \
   -d '{
     "model": "deepseek-reasoner",
     "messages": [
@@ -61,7 +61,7 @@ curl https://api.deepseek.com/v1/chat/completions \
 ```bash
 curl https://api.deepseek.com/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $NEWAPI_API_KEY" \
+  -H "Authorization: Bearer $LLM_Hub_API_KEY" \
   -d '{
     "model": "deepseek-reasoner",
     "messages": [
@@ -107,10 +107,10 @@ POST /v1/chat/completions
 在请求头中包含以下内容进行 API 密钥认证：
 
 ```
-Authorization: Bearer $NEWAPI_API_KEY
+Authorization: Bearer $LLM_Hub_API_KEY
 ```
 
-其中 `$DEEPSEEK_API_KEY` 是您的 API 密钥。
+其中 `$LLM_Hub_API_KEY` 是您的 API 密钥。
 
 ### 请求体参数
 

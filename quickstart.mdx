@@ -17,7 +17,7 @@ LLM Hub 提供统一的 API，让您可以通过单个端点访问数百个 AI �
 
     client = OpenAI(
     base_url="https://api.llmhub.com.cn/api/v1",
-    api_key="<LLMHub_API_KEY>",
+    api_key="<LLM_Hub_API_KEY>",
     )
 
     completion = client.chat.completions.create(
@@ -43,7 +43,7 @@ LLM Hub 提供统一的 API，让您可以通过单个端点访问数百个 AI �
 
     const openai = new OpenAI({
         baseURL: 'https://api.llmhub.com.cn/api/v1',
-        apiKey: '<LLMHub_API_KEY>',
+        apiKey: '<LLM_Hub_API_KEY>',
         defaultHeaders: {
         'HTTP-Referer': '<YOUR_SITE_URL>', // 可选
         'X-Title': '<YOUR_SITE_NAME>', // 可选
@@ -84,7 +84,7 @@ LLM Hub 提供统一的 API，让您可以通过单个端点访问数百个 AI �
     response = requests.post(
     url="https://api.llmhub.com.cn/api/v1/chat/completions",
     headers={
-    "Authorization": "Bearer <LLMHub_API_KEY>",
+    "Authorization": "Bearer <LLM_Hub_API_KEY>",
     "HTTP-Referer": "<YOUR_SITE_URL>", # 可选
     "X-Title": "<YOUR_SITE_NAME>", # 可选
 },
@@ -105,7 +105,7 @@ LLM Hub 提供统一的 API，让您可以通过单个端点访问数百个 AI �
     fetch('https://api.llmhub.com.cn/api/v1/chat/completions', {
     method: 'POST',
     headers: {
-    Authorization: 'Bearer <LLMHub_API_KEY>',
+    Authorization: 'Bearer <LLM_Hub_API_KEY>',
     'HTTP-Referer': '<YOUR_SITE_URL>', // 可选
     'X-Title': '<YOUR_SITE_NAME>', // 可选
     'Content-Type': 'application/json',
@@ -126,7 +126,7 @@ LLM Hub 提供统一的 API，让您可以通过单个端点访问数百个 AI �
     ```shell Shell
     curl https://api.llmhub.com.cn/api/v1/chat/completions \
     -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $LLMHub_API_KEY" \
+    -H "Authorization: Bearer $LLM_Hub_API_KEY" \
     -d '{
     "model": "openai/gpt-4o",
     "messages": [
