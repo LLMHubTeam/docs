@@ -7,15 +7,15 @@ title: "OpenAI Responses"
     - [OpenAI Responses](https://platform.openai.com/docs/api-reference/responses)
 </Info>
 
-## 📝 简介
+## 简介
 
 OpenAI 最先进的模型响应接口。支持文本和图像输入，以及文本输出。创建与模型的有状态交互，将先前响应的输出用作输入。通过文件搜索、网络搜索、计算机使用等内置工具扩展模型的能力。使用函数调用允许模型访问外部系统和数据。
 
 相关指南可参阅OpenAI官网：[Responses](https://platform.openai.com/docs/guides/responses)
 
-## 💡 请求示例
+## 请求示例
 
-### 基础文本响应 ✅
+### 基础文本响应
 
 ```bash
 curl https://你的newapi服务器地址/v1/responses \
@@ -88,7 +88,7 @@ curl https://你的newapi服务器地址/v1/responses \
 }
 ```
 
-### 图像分析响应 ✅
+### 图像分析响应
 
 ```bash
 curl https://你的newapi服务器地址/v1/responses \
@@ -172,7 +172,7 @@ curl https://你的newapi服务器地址/v1/responses \
 }
 ```
 
-### 网络搜索工具 ✅
+### 网络搜索工具
 
 ```bash
 curl https://你的newapi服务器地址/v1/responses \
@@ -286,7 +286,7 @@ curl https://你的newapi服务器地址/v1/responses \
 }
 ```
 
-### 文件搜索工具 ✅
+### 文件搜索工具
 
 ```bash
 curl https://你的newapi服务器地址/v1/responses \
@@ -435,7 +435,7 @@ curl https://你的newapi服务器地址/v1/responses \
 }
 ```
 
-### 流式响应 ✅
+### 流式响应
 
 ```bash
 curl https://你的newapi服务器地址/v1/responses \
@@ -510,7 +510,7 @@ event: response.completed
 data: {"type":"response.completed","response":{"id":"resp_67c9fdcecf488190bdd9a0409de3a1ec07b8b0ad4e5eb654","object":"response","created_at":1741290958,"status":"completed","error":null,"incomplete_details":null,"instructions":"你是一个有帮助的助手。","max_output_tokens":null,"model":"gpt-4.1-2025-04-14","output":[{"id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","type":"message","status":"completed","role":"assistant","content":[{"type":"output_text","text":"你好！ 我能为您提供什么帮助吗？","annotations":[]}]}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"summary":null},"store":true,"temperature":1.0,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":37,"output_tokens":11,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":48},"user":null,"metadata":{}}}
 ```
 
-### 函数调用 ✅
+### 函数调用
 
 ```bash
 curl https://你的newapi服务器地址/v1/responses \
@@ -624,7 +624,7 @@ curl https://你的newapi服务器地址/v1/responses \
 }
 ```
 
-### 推理能力 ✅
+### 推理能力
 
 ```bash
 curl https://你的newapi服务器地址/v1/responses \
@@ -700,7 +700,7 @@ curl https://你的newapi服务器地址/v1/responses \
 }
 ```
 
-## 📮 请求
+## 请求
 
 ### 端点
 
@@ -1250,7 +1250,7 @@ URL引用:
 
 表示最终用户的唯一标识符，可以帮助OpenAI监控和检测滥用行为。
 
-## 📥 响应
+## 响应
 
 返回一个响应对象。
 
