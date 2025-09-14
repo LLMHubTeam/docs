@@ -32,7 +32,7 @@
                 "text_example": {
                   "summary": "基础文本对话",
                   "value": {
-                    "model": "gpt-4.1",
+                    "model": "gpt-5",
                     "messages": [
                       {
                         "role": "developer",
@@ -48,7 +48,7 @@
                 "image_example": {
                   "summary": "图像分析对话",
                   "value": {
-                    "model": "gpt-4.1",
+                    "model": "gpt-5",
                     "messages": [
                       {
                         "role": "user",
@@ -72,7 +72,7 @@
                 "function_example": {
                   "summary": "函数调用",
                   "value": {
-                    "model": "gpt-4.1",
+                    "model": "gpt-5",
                     "messages": [
                       {
                         "role": "user",
@@ -124,7 +124,7 @@
                       "id": "chatcmpl-B9MBs8CjcvOU2jLn4n570S5qMJKcT",
                       "object": "chat.completion",
                       "created": 1741569952,
-                      "model": "gpt-4.1-2025-04-14",
+                      "model": "gpt-5-2025-04-14",
                       "choices": [
                         {
                           "index": 0,
@@ -162,7 +162,7 @@
                       "id": "chatcmpl-B9MHDbslfkBeAs8l4bebGdFOJ6PeG",
                       "object": "chat.completion",
                       "created": 1741570283,
-                      "model": "gpt-4.1-2025-04-14",
+                      "model": "gpt-5-2025-04-14",
                       "choices": [
                         {
                           "index": 0,
