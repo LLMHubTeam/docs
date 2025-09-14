@@ -7,13 +7,13 @@ title: "OpenAI 对话格式（Chat Completions）"
   [OpenAI Chat](https://platform.openai.com/docs/api-reference/chat)
 </Info>
 
-## 📝 简介
+## 简介
 
 给定一组包含对话的消息列表，模型将返回一个响应。相关指南可参阅OpenAI官网：[Chat Completions](https://platform.openai.com/docs/guides/chat)
 
 ## 💡 请求示例
 
-### 基础文本对话 ✅
+### 基础文本对话
 
 ```bash
 curl https://你的newapi服务器地址/v1/chat/completions \
@@ -74,7 +74,7 @@ curl https://你的newapi服务器地址/v1/chat/completions \
 }
 ```
 
-### 图像分析对话 ✅
+### 图像分析对话
 
 ```bash
 curl https://你的newapi服务器地址/v1/chat/completions \
@@ -144,7 +144,7 @@ curl https://你的newapi服务器地址/v1/chat/completions \
 }
 ```
 
-### 流式响应 ✅
+### 流式响应
 
 ```bash
 curl https://你的newapi服务器地址/v1/chat/completions \
@@ -178,7 +178,7 @@ curl https://你的newapi服务器地址/v1/chat/completions \
 {"id":"chatcmpl-123","object":"chat.completion.chunk","created":1694268190,"model":"gpt-4o-mini", "system_fingerprint": "fp_44709d6fcb", "choices":[{"index":0,"delta":{},"logprobs":null,"finish_reason":"stop"}]}
 ```
 
-### 函数调用 ✅
+### 函数调用
 
 ```bash
 curl https://你的newapi服务器地址/v1/chat/completions \
@@ -261,7 +261,7 @@ curl https://你的newapi服务器地址/v1/chat/completions \
 }
 ```
 
-### Logprobs 请求 ✅
+### 请求
 
 ```bash
 curl https://你的newapi服务器地址/v1/chat/completions \

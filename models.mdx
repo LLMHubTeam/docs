@@ -1,6 +1,6 @@
 ---
 title: "模型"
-description: "通过 OpenRouter 的统一 API 访问所有主流语言模型 (LLM)。浏览可用的模型，比较功能，并与您首选的提供商集成。"
+description: "通过 LLM Hub 的统一 API 访问所有主流语言模型 (LLM)。浏览可用的模型，比较功能，并与您首选的提供商集成。"
 icon: 'cube'
 ---
 
@@ -33,7 +33,7 @@ icon: 'cube'
 | `id`                   | `string`                                      | Unique model identifier used in API requests (e.g., `"google/gemini-2.5-pro-preview"`) |
 | `canonical_slug`       | `string`                                      | Permanent slug for the model that never changes                                        |
 | `name`                 | `string`                                      | Human-readable display name for the model                                              |
-| `created`              | `number`                                      | Unix timestamp of when the model was added to OpenRouter                               |
+| `created`              | `number`                                      | Unix timestamp of when the model was added to LLM Hub                               |
 | `description`          | `string`                                      | Detailed description of the model's capabilities and characteristics                   |
 | `context_length`       | `number`                                      | Maximum context window size in tokens                                                  |
 | `architecture`         | `Architecture`                                | Object describing the model's technical capabilities                                   |
@@ -107,8 +107,8 @@ The `supported_parameters` array indicates which OpenAI-compatible parameters wo
     to get the token counts for the input and output.
 </Note>
 
-If there are models or providers you are interested in that OpenRouter doesn't have, please tell us about them in our [Discord channel](https://openrouter.ai/discord).
+If there are models or providers you are interested in that LLM Hub doesn't have, please tell us about them in our [Discord channel](https://openrouter.ai/discord).
 
 ## For Providers
 
-If you're interested in working with OpenRouter, you can learn more on our [providers page](/docs/use-cases/for-providers).
+If you're interested in working with LLM Hub, you can learn more on our [providers page](/docs/use-cases/for-providers).

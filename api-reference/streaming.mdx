@@ -1,10 +1,10 @@
 ---
 title: "Streaming"
-description: "Learn how to implement streaming responses with OpenRouter's API. Complete guide to Server-Sent Events (SSE) and real-time model outputs."
+description: "Learn how to implement streaming responses with LLM Hub's API. Complete guide to Server-Sent Events (SSE) and real-time model outputs."
 icon: 'bars-staggered'
 ---
 
-The OpenRouter API allows streaming responses from _any model_. This is useful for building chat interfaces or other applications where the UI should update as the model generates the response.
+The LLM Hub API allows streaming responses from _any model_. This is useful for building chat interfaces or other applications where the UI should update as the model generates the response.
 
 To enable streaming, you can set the `stream` parameter to `true` in your request. The model will then stream the response to the client in chunks, rather than returning the entire response at once.
 
@@ -129,7 +129,7 @@ Here is an example of how to stream a response, and process it:
 
 ### Additional Information
 
-For SSE (Server-Sent Events) streams, OpenRouter occasionally sends comments to prevent connection timeouts. These comments look like:
+For SSE (Server-Sent Events) streams, LLM Hub occasionally sends comments to prevent connection timeouts. These comments look like:
 
 ```text
 : OPENROUTER PROCESSING

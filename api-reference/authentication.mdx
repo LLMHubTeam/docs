@@ -1,15 +1,15 @@
 ---
 title: "Authentication"
-description: "Learn how to authenticate with OpenRouter using API keys and Bearer tokens. Complete guide to secure authentication methods and best practices."
+description: "Learn how to authenticate with LLM Hub using API keys and Bearer tokens. Complete guide to secure authentication methods and best practices."
 icon: 'lock'
 ---
 
-You can cover model costs with OpenRouter API keys.
+You can cover model costs with LLM Hub API keys.
 
-Our API authenticates requests using Bearer tokens. This allows you to use `curl` or the [OpenAI SDK](https://platform.openai.com/docs/frameworks) directly with OpenRouter.
+Our API authenticates requests using Bearer tokens. This allows you to use `curl` or the [OpenAI SDK](https://platform.openai.com/docs/frameworks) directly with LLM Hub.
 
 <Warning>
-  API keys on OpenRouter are more powerful than keys used directly for model APIs.
+  API keys on LLM Hub are more powerful than keys used directly for model APIs.
 
   They allow users to set credit limits for apps, and they can be used in [OAuth](/docs/use-cases/oauth-pkce) flows.
 </Warning>
@@ -18,7 +18,7 @@ Our API authenticates requests using Bearer tokens. This allows you to use `curl
 
 To use an API key, [first create your key](https://openrouter.ai/keys). Give it a name and you can optionally set a credit limit.
 
-If you're calling the OpenRouter API directly, set the `Authorization` header to a Bearer token with your API key.
+If you're calling the LLM Hub API directly, set the `Authorization` header to a Bearer token with your API key.
 
 If you're using the OpenAI Typescript SDK, set the `api_base` to `https://openrouter.ai/api/v1` and the `apiKey` to your API key.
 
@@ -113,7 +113,7 @@ To stream with Python, [see this example from OpenAI](https://github.com/openai/
   You must protect your API keys and never commit them to public repositories.
 </Warning>
 
-OpenRouter is a GitHub secret scanning partner, and has other methods to detect exposed keys. If we determine that your key has been compromised, you will receive an email notification.
+LLM Hub is a GitHub secret scanning partner, and has other methods to detect exposed keys. If we determine that your key has been compromised, you will receive an email notification.
 
 If you receive such a notification or suspect your key has been exposed, immediately visit [your key settings page](https://openrouter.ai/settings/keys) to delete the compromised key and create a new one.
 

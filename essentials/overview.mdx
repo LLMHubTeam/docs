@@ -1,10 +1,10 @@
 ---
 title: "API Reference"
-description: "Comprehensive guide to OpenRouter's API. Learn about request/response schemas, authentication, parameters, and integration with multiple AI model providers."
+description: "Comprehensive guide to LLM Hub's API. Learn about request/response schemas, authentication, parameters, and integration with multiple AI model providers."
 icon: 'book-open'
 ---
 
-OpenRouter's request and response schemas are very similar to the OpenAI Chat API, with a few small differences. At a high level, **OpenRouter normalizes the schema across models and providers** so you only need to learn one.
+LLM Hub's request and response schemas are very similar to the OpenAI Chat API, with a few small differences. At a high level, **LLM Hub normalizes the schema across models and providers** so you only need to learn one.
 
 ## Requests
 
@@ -61,7 +61,7 @@ top_a?: number; // Range: [0, 1]
 // https://platform.openai.com/docs/guides/latency-optimization#use-predicted-outputs
 prediction?: { type: 'content'; content: string };
 
-// OpenRouter-only parameters
+// LLM Hub-only parameters
 // See "Prompt Transforms" section: openrouter.ai/docs/transforms
 transforms?: string[];
 // See "Model Routing" section: openrouter.ai/docs/model-routing
@@ -133,7 +133,7 @@ The `response_format` parameter ensures you receive a structured response from t
 
 ### Headers
 
-OpenRouter allows you to specify some optional headers to identify your app and make it discoverable to users on our site.
+LLM Hub allows you to specify some optional headers to identify your app and make it discoverable to users on our site.
 
 - `HTTP-Referer`: Identifies your app on openrouter.ai
 - `X-Title`: Sets/modifies your app's title
@@ -167,7 +167,7 @@ content: 'What is the meaning of life?',
   If the `model` parameter is omitted, the user or payer's default is used.
   Otherwise, remember to select a value for `model` from the [supported
   models](/models) or [API](/api/v1/models), and include the organization
-  prefix. OpenRouter will select the least expensive and best GPUs available to
+  prefix. LLM Hub will select the least expensive and best GPUs available to
   serve the request, and fall back to other providers or GPUs if it receives a
   5xx response code or if you are rate-limited.
 </Info>
@@ -188,7 +188,7 @@ content: 'What is the meaning of life?',
 
 ### Assistant Prefill
 
-OpenRouter supports asking models to complete a partial response. This can be useful for guiding models to respond in a certain way.
+LLM Hub supports asking models to complete a partial response. This can be useful for guiding models to respond in a certain way.
 
 To use this features, simply include a message with `role: "assistant"` at the end of your `messages` array.
 
@@ -217,7 +217,7 @@ messages: [
 
 ### CompletionsResponse Format
 
-OpenRouter normalizes the schema across models and providers to comply with the [OpenAI Chat API](https://platform.openai.com/docs/api-reference/chat).
+LLM Hub normalizes the schema across models and providers to comply with the [OpenAI Chat API](https://platform.openai.com/docs/api-reference/chat).
 
 This means that `choices` is always an array, even if the model only returns one completion. Each choice will contain a `delta` property if a stream was requested and a `message` property otherwise. This makes it easier to use the same code for all models.
 
@@ -328,7 +328,7 @@ Here's an example:
 
 ### Finish Reason
 
-OpenRouter normalizes each model's `finish_reason` to one of the following values: `tool_calls`, `stop`, `length`, `content_filter`, `error`.
+LLM Hub normalizes each model's `finish_reason` to one of the following values: `tool_calls`, `stop`, `length`, `content_filter`, `error`.
 
 Some models and providers may have additional finish reasons. The raw finish_reason string returned by the model is available via the `native_finish_reason` property.
 

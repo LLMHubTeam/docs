@@ -1,12 +1,12 @@
 ---
 title: "Parameters"
-description: "Learn about all available parameters for OpenRouter API requests. Configure temperature, max tokens, top_p, and other model-specific settings."
+description: "Learn about all available parameters for LLM Hub API requests. Configure temperature, max tokens, top_p, and other model-specific settings."
 icon: 'gear'
 ---
 
-Sampling parameters shape the token generation process of the model. You may send any parameters from the following list, as well as others, to OpenRouter.
+Sampling parameters shape the token generation process of the model. You may send any parameters from the following list, as well as others, to LLM Hub.
 
-OpenRouter will default to the values listed below if certain parameters are absent from your request (for example, `temperature` to 1.0). We will also transmit some provider-specific parameters, such as `safe_prompt` for Mistral or `raw_mode` for Hyperbolic directly to the respective providers if specified.
+LLM Hub will default to the values listed below if certain parameters are absent from your request (for example, `temperature` to 1.0). We will also transmit some provider-specific parameters, such as `safe_prompt` for Mistral or `raw_mode` for Hyperbolic directly to the respective providers if specified.
 
 Please refer to the model鈥檚 provider section to confirm which parameters are supported. For detailed guidance on managing provider-specific parameters, [click here](/docs/features/provider-routing#requiring-providers-to-support-all-parameters-beta).
 
