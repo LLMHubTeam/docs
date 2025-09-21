@@ -27,11 +27,17 @@
             "group": "API 参考",
             "icon": "code",
             "pages": [
-              "api-reference/openai-responses",
-              "api-reference/openai-chat-completions",
-              "api-reference/anthropic-messages",
-              "api-reference/google-generate",
-              "api-reference/deepseek-reasoner"
+              {
+                "group": "Chat API",
+                "icon": "puzzle-piece",
+                "pages": [
+                  "api-reference/openai-responses",
+                  "api-reference/openai-chat-completions",
+                  "api-reference/anthropic-messages",
+                  "api-reference/google-generate",
+                  "api-reference/deepseek-reasoner"
+                ]
+              }
             ]
           },
           {
