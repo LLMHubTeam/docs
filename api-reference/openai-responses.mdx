@@ -895,13 +895,13 @@ URL引用:
 
 ##### 推理相关项
 
-| 属性                | 类型       | 必需 | 描述                                                       |
-|-------------------|----------|----|----------------------------------------------------------|
-| id                | 字符串      | 是  | 推理内容的唯一标识符                                               |
-| summary           | 数组       | 是  | 推理文本内容                                                   |
-| type              | 字符串      | 是  | 对象的类型，始终为 `reasoning`                                    |
-| encrypted_content | 字符串或null | 否  | 推理项的加密内容 - 当使用 `reasoning.encrypted_content` 包含参数生成响应时填充 |
-| status            | 字符串      | 否  | 项目的状态。可能值：`in_progress`、`completed`或`incomplete`         |
+| 属性 | 类型 | 必需 | 描述 |
+|------|------|------|------|
+| id | 字符串 | 是 | 推理内容的唯一标识符 |
+| summary | 数组 | 是 | 推理文本内容 |
+| type | 字符串 | 是 | 对象的类型，始终为 `reasoning` |
+| encrypted_content | 字符串或null | 否 | 推理项的加密内容 - 当使用 `reasoning.encrypted_content` 包含参数生成响应时填充 |
+| status | 字符串 | 否 | 项目的状态。可能值：`in_progress`、`completed`或`incomplete` |
 
 推理摘要:
 
