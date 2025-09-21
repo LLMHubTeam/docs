@@ -40,6 +40,12 @@
                 "pages": [
                   "api-reference/openai-embeddings"
                 ]
+              },
+              {
+                "group": "Embeddings",
+                "pages": [
+                  "api-reference/openai-realtime"
+                ]
               }
             ]
           },
