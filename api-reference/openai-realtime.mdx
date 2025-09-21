@@ -1,1360 +1,1047 @@
 ---
-title: "OpenAI Responses"
+title: "OpenAI Realtime"
 ---
 
 <Info>
     **官方文档**
-    - [OpenAI Responses](https://platform.openai.com/docs/api-reference/responses)
+    - [OpenAI Realtime WebRTC](https://platform.openai.com/docs/guides/realtime-webrtc)
+    - [OpenAI Realtime WebSocket](https://platform.openai.com/docs/guides/realtime-websocket)
 </Info>
 
-## 简介
+## 概述
 
-OpenAI 最先进的模型响应接口。支持文本和图像输入，以及文本输出。创建与模型的有状态交互，将先前响应的输出用作输入。通过文件搜索、网络搜索、计算机使用等内置工具扩展模型的能力。使用函数调用允许模型访问外部系统和数据。
+### 简介
+OpenAI Realtime API 提供两种连接方式：
 
-相关指南可参阅OpenAI官网：[Responses](https://platform.openai.com/docs/guides/responses)
+1. WebRTC - 适用于浏览器和移动客户端的实时音视频交互
+
+2. WebSocket - 适用于服务器到服务器的应用程序集成
+
+### 使用场景
+- 实时语音对话
+- 音视频会议
+- 实时翻译
+- 语音转写
+- 实时代码生成
+- 服务器端实时集成
+
+### 主要特性
+- 双向音频流传输
+- 文本和音频混合对话
+- 函数调用支持
+- 自动语音检测(VAD)
+- 音频转写功能
+- WebSocket 服务器端集成
+
+## 认证与安全
+
+### 认证方式
+1. 标准 API 密钥 (仅服务器端使用)
+2. 临时令牌 (客户端使用)
+
+### 临时令牌
+- 有效期: 1分钟
+- 使用限制: 单个连接
+- 获取方式: 通过服务器端 API 创建
+
+```http
+POST https://api.llmhub.com.cn/v1/realtime/sessions
+Content-Type: application/json
+Authorization: Bearer $LLM_Hub_API_KEY
+
+{
+  "model": "gpt-4o-realtime-preview-2024-12-17",
+  "voice": "verse"
+}
+```
+
+### 安全建议
+- 永远不要在客户端暴露标准 API 密钥
+- 使用 HTTPS/WSS 进行通信
+- 实现适当的访问控制
+- 监控异常活动
+
+## 连接建立
+
+### WebRTC 连接
+- URL: `https://api.llmhub.com.cn/v1/realtime`
+- 查询参数: `model`
+- 请求头:
+- `Authorization: Bearer EPHEMERAL_KEY`
+- `Content-Type: application/sdp`
+
+### WebSocket 连接
+- URL: `wss://api.llmhub.com.cn/v1/realtime`
+- 查询参数: `model`
+- 请求头:
+- `Authorization: Bearer YOUR_API_KEY`
+- `OpenAI-Beta: realtime=v1`
+
+### 连接流程
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+    participant OpenAI
+
+    alt WebRTC 连接
+        Client->>Server: 请求临时令牌
+        Server->>OpenAI: 创建会话
+        OpenAI-->>Server: 返回临时令牌
+        Server-->>Client: 返回临时令牌
+
+        Client->>OpenAI: 创建 WebRTC offer
+        OpenAI-->>Client: 返回 answer
+
+        Note over Client,OpenAI: 建立 WebRTC 连接
+
+        Client->>OpenAI: 创建数据通道
+        OpenAI-->>Client: 确认数据通道
+    else WebSocket 连接
+        Server->>OpenAI: 建立 WebSocket 连接
+        OpenAI-->>Server: 确认连接
+
+        Note over Server,OpenAI: 开始实时对话
+    end
+```
+
+### 数据通道
+- 名称: `oai-events`
+- 用途: 事件传输
+- 格式: JSON
+
+### 音频流
+- 输入: `addTrack()`
+- 输出: `ontrack` 事件
+
+## 对话交互
+
+### 对话模式
+1. 纯文本对话
+2. 语音对话
+3. 混合对话
+
+### 会话管理
+- 创建会话
+- 更新会话
+- 结束会话
+- 会话配置
+
+### 事件类型
+- 文本事件
+- 音频事件
+- 函数调用
+- 状态更新
+- 错误事件
+
+## 配置选项
+
+### 音频配置
+- 输入格式
+- `pcm16`
+- `g711_ulaw`
+- `g711_alaw`
+- 输出格式
+- `pcm16`
+- `g711_ulaw`
+- `g711_alaw`
+- 语音类型
+- `alloy`
+- `echo`
+- `shimmer`
+
+### 模型配置
+- 温度
+- 最大输出长度
+- 系统提示词
+- 工具配置
+
+### VAD 配置
+- 阈值
+- 静音时长
+- 前缀填充
 
 ## 请求示例
 
-### 基础文本响应
+### WebRTC 连接
 
-```bash
-curl https://api.llmhub.com.cn/v1/responses \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $LLM_Hub_API_KEY" \
-  -d '{
-    "model": "gpt-4.1",
-    "input": "讲一个三句话的关于独角兽的睡前故事。"
-  }'
-```
+#### 客户端实现 (浏览器)
+```javascript
+async function init() {
+  // 从服务器获取临时密钥 - 参见下方服务器代码
+  const tokenResponse = await fetch("/session");
+  const data = await tokenResponse.json();
+  const EPHEMERAL_KEY = data.client_secret.value;
 
-**响应示例:**
+  // 创建对等连接
+  const pc = new RTCPeerConnection();
 
-```json
-{
-  "id": "resp_67ccd2bed1ec8190b14f964abc0542670bb6a6b452d3795b",
-  "object": "response",
-  "created_at": 1741476542,
-  "status": "completed",
-  "error": null,
-  "incomplete_details": null,
-  "instructions": null,
-  "max_output_tokens": null,
-  "model": "gpt-4.1",
-  "output": [
-    {
-      "type": "message",
-      "id": "msg_67ccd2bf17f0819081ff3bb2cf6508e60bb6a6b452d3795b",
-      "status": "completed",
-      "role": "assistant",
-      "content": [
-        {
-          "type": "output_text",
-          "text": "在一个宁静的月夜下，一只名叫璐米娜的独角兽发现了一个倒映着星星的隐藏水池。当她将独角浸入水中时，水池开始闪烁，显现出通往一个有着无尽夜空的魔法世界的路径。充满好奇，璐米娜为所有做梦的人许下愿望，希望他们能找到自己的隐藏魔法，当她回头望去，她的蹄印像星尘一样闪烁。",
-          "annotations": []
-        }
-      ]
-    }
-  ],
-  "parallel_tool_calls": true,
-  "previous_response_id": null,
-  "reasoning": {
-    "effort": null,
-    "summary": null
-  },
-  "store": true,
-  "temperature": 1.0,
-  "text": {
-    "format": {
-      "type": "text"
-    }
-  },
-  "tool_choice": "auto",
-  "tools": [],
-  "top_p": 1.0,
-  "truncation": "disabled",
-  "usage": {
-    "input_tokens": 36,
-    "input_tokens_details": {
-      "cached_tokens": 0
+  // 设置播放模型返回的远程音频
+  const audioEl = document.createElement("audio");
+  audioEl.autoplay = true;
+  pc.ontrack = e => audioEl.srcObject = e.streams[0];
+
+  // 添加浏览器麦克风输入的本地音频轨道
+  const ms = await navigator.mediaDevices.getUserMedia({
+    audio: true
+  });
+  pc.addTrack(ms.getTracks()[0]);
+
+  // 设置用于发送和接收事件的数据通道
+  const dc = pc.createDataChannel("oai-events");
+  dc.addEventListener("message", (e) => {
+    // 这里接收实时服务器事件！
+    console.log(e);
+  });
+
+  // 使用会话描述协议(SDP)启动会话
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+
+  const baseUrl = "https://api.llmhub.com.cn/v1/realtime";
+  const model = "gpt-4o-realtime-preview-2024-12-17";
+  const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
+    method: "POST",
+    body: offer.sdp,
+    headers: {
+      Authorization: `Bearer ${EPHEMERAL_KEY}`,
+      "Content-Type": "application/sdp"
     },
-    "output_tokens": 87,
-    "output_tokens_details": {
-      "reasoning_tokens": 0
-    },
-    "total_tokens": 123
-  },
-  "user": null,
-  "metadata": {}
+  });
+
+  const answer = {
+    type: "answer",
+    sdp: await sdpResponse.text(),
+  };
+  await pc.setRemoteDescription(answer);
 }
+
+init();
 ```
 
-### 图像分析响应
+#### 服务器端实现 (Node.js)
+```javascript
+import express from "express";
 
-```bash
-curl https://api.llmhub.com.cn/v1/responses \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $LLM_Hub_API_KEY" \
-  -d '{
-    "model": "gpt-4.1",
-    "input": [
-      {
-        "role": "user",
-        "content": [
-          {"type": "input_text", "text": "描述这张图片中的内容"},
-          {
-            "type": "input_image",
-            "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
-          }
-        ]
-      }
-    ]
-  }'
+const app = express();
+
+// 创建一个端点用于生成临时令牌
+// 该端点与上面的客户端代码配合使用
+app.get("/session", async (req, res) => {
+  const r = await fetch("https://api.llmhub.com.cn/v1/realtime/sessions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.LLM_Hub_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-realtime-preview-2024-12-17",
+      voice: "verse",
+    }),
+  });
+  const data = await r.json();
+
+  // 将从OpenAI REST API收到的JSON发送回客户端
+  res.send(data);
+});
+
+app.listen(3000);
 ```
 
-**响应示例:**
+#### WebRTC 事件收发示例
+```javascript
+// 从对等连接创建数据通道
+const dc = pc.createDataChannel("oai-events");
 
-```json
-{
-  "id": "resp_67ccd3a9da748190baa7f1570fe91ac604becb25c45c1d41",
-  "object": "response",
-  "created_at": 1741476777,
-  "status": "completed",
-  "error": null,
-  "incomplete_details": null,
-  "instructions": null,
-  "max_output_tokens": null,
-  "model": "gpt-4.1",
-  "output": [
-    {
-      "type": "message",
-      "id": "msg_67ccd3acc8d48190a77525dc6de64b4104becb25c45c1d41",
-      "status": "completed",
-      "role": "assistant",
-      "content": [
-        {
-          "type": "output_text",
-          "text": "这张图片展示了一条木制栈道或小径穿过茂密的绿色草地，上方是点缀着几朵云的蓝天。场景呈现出一个宁静的自然区域，可能是公园或自然保护区。背景中有树木和灌木丛。整个景观展现出和谐的自然环境，栈道为游客提供了一条穿过湿地或草原而不影响周围生态系统的路径。",
-          "annotations": []
+// 监听数据通道上的服务器事件
+// 事件数据需要从JSON字符串解析
+dc.addEventListener("message", (e) => {
+  const realtimeEvent = JSON.parse(e.data);
+  console.log(realtimeEvent);
+});
+
+// 发送客户端事件：将有效的客户端事件序列化为
+// JSON，并通过数据通道发送
+const responseCreate = {
+  type: "response.create",
+  response: {
+    modalities: ["text"],
+    instructions: "Write a haiku about code",
+  },
+};
+dc.send(JSON.stringify(responseCreate));
+```
+
+### WebSocket 连接
+
+#### Node.js (ws模块)
+```javascript
+import WebSocket from "ws";
+
+const url = "wss://api.llmhub.com.cn/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17";
+const ws = new WebSocket(url, {
+  headers: {
+    "Authorization": "Bearer " + process.env.LLM_Hub_API_KEY,
+    "OpenAI-Beta": "realtime=v1",
+  },
+});
+
+ws.on("open", function open() {
+  console.log("Connected to server.");
+});
+
+ws.on("message", function incoming(message) {
+  console.log(JSON.parse(message.toString()));
+});
+```
+
+#### Python (websocket-client)
+```python
+# 需要安装 websocket-client 库:
+# pip install websocket-client
+
+import os
+import json
+import websocket
+
+LLM_Hub_API_KEY = os.environ.get("LLM_Hub_API_KEY")
+
+url = "wss://api.llmhub.com.cn/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17"
+headers = [
+    "Authorization: Bearer " + LLM_Hub_API_KEY,
+    "OpenAI-Beta: realtime=v1"
+]
+
+def on_open(ws):
+    print("Connected to server.")
+
+def on_message(ws, message):
+    data = json.loads(message)
+    print("Received event:", json.dumps(data, indent=2))
+
+ws = websocket.WebSocketApp(
+    url,
+    header=headers,
+    on_open=on_open,
+    on_message=on_message,
+)
+
+ws.run_forever()
+```
+
+#### 浏览器 (标准WebSocket)
+```javascript
+/*
+注意：在浏览器等客户端环境中，我们建议使用WebRTC。
+但在Deno和Cloudflare Workers等类浏览器环境中，
+也可以使用标准WebSocket接口。
+*/
+
+const ws = new WebSocket(
+  "wss://api.llmhub.com.cn/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17",
+  [
+    "realtime",
+    // 认证
+    "openai-insecure-api-key." + LLM_Hub_API_KEY,
+    // 可选
+    "openai-organization." + OPENAI_ORG_ID,
+    "openai-project." + OPENAI_PROJECT_ID,
+    // Beta协议，必需
+    "openai-beta.realtime-v1"
+  ]
+);
+
+ws.on("open", function open() {
+  console.log("Connected to server.");
+});
+
+ws.on("message", function incoming(message) {
+  console.log(message.data);
+});
+```
+
+#### 消息收发示例
+
+##### Node.js/浏览器
+```javascript
+// 接收服务器事件
+ws.on("message", function incoming(message) {
+  // 需要从JSON解析消息数据
+  const serverEvent = JSON.parse(message.data)
+  console.log(serverEvent);
+});
+
+// 发送事件，创建符合客户端事件格式的JSON数据结构
+const event = {
+  type: "response.create",
+  response: {
+    modalities: ["audio", "text"],
+    instructions: "Give me a haiku about code.",
+  }
+};
+ws.send(JSON.stringify(event));
+```
+
+##### Python
+```python
+# 发送客户端事件，将字典序列化为JSON
+def on_open(ws):
+    print("Connected to server.")
+
+    event = {
+        "type": "response.create",
+        "response": {
+            "modalities": ["text"],
+            "instructions": "Please assist the user."
         }
-      ]
     }
-  ],
-  "parallel_tool_calls": true,
-  "previous_response_id": null,
-  "reasoning": {
-    "effort": null,
-    "summary": null
-  },
-  "store": true,
-  "temperature": 1.0,
-  "text": {
-    "format": {
-      "type": "text"
-    }
-  },
-  "tool_choice": "auto",
-  "tools": [],
-  "top_p": 1.0,
-  "truncation": "disabled",
-  "usage": {
-    "input_tokens": 328,
-    "input_tokens_details": {
-      "cached_tokens": 0
-    },
-    "output_tokens": 52,
-    "output_tokens_details": {
-      "reasoning_tokens": 0
-    },
-    "total_tokens": 380
-  },
-  "user": null,
-  "metadata": {}
-}
+    ws.send(json.dumps(event))
+
+# 接收消息需要从JSON解析消息负载
+def on_message(ws, message):
+    data = json.loads(message)
+    print("Received event:", json.dumps(data, indent=2))
 ```
 
-### 网络搜索工具
+## 错误处理
 
-```bash
-curl https://api.llmhub.com.cn/v1/responses \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $LLM_Hub_API_KEY" \
-  -d '{
-    "model": "gpt-4.1",
-    "tools": [{ "type": "web_search_preview" }],
-    "input": "今天有什么积极正面的新闻?"
-  }'
-```
+### 常见错误
+1. 连接错误
+- 网络问题
+- 认证失败
+- 配置错误
+2. 音频错误
+- 设备权限
+- 格式不支持
+- 编解码问题
+3. 会话错误
+- 令牌过期
+- 会话超时
+- 并发限制
 
-**响应示例:**
+### 错误恢复
+1. 自动重连
+2. 会话恢复
+3. 错误重试
+4. 降级处理
 
-```json
-{
-  "id": "resp_67ccf18ef5fc8190b16dbee19bc54e5f087bb177ab789d5c",
-  "object": "response",
-  "created_at": 1741484430,
-  "status": "completed",
-  "error": null,
-  "incomplete_details": null,
-  "instructions": null,
-  "max_output_tokens": null,
-  "model": "gpt-4.1",
-  "output": [
-    {
-      "type": "web_search_call",
-      "id": "ws_67ccf18f64008190a39b619f4c8455ef087bb177ab789d5c",
-      "status": "completed"
-    },
-    {
-      "type": "message",
-      "id": "msg_67ccf190ca3881909d433c50b1f6357e087bb177ab789d5c",
-      "status": "completed",
-      "role": "assistant",
-      "content": [
-        {
-          "type": "output_text",
-          "text": "截至今天，2025年3月9日，一则值得关注的积极新闻是中国科学家在可再生能源领域取得重大突破，成功研发出一种新型高效太阳能电池，转化率达到了创纪录的35%，这可能会极大推动清洁能源的普及和应用。这项技术预计将使太阳能发电成本降低约40%，为全球减少碳排放提供了新的解决方案。",
-          "annotations": [
-            {
-              "type": "url_citation",
-              "start_index": 42,
-              "end_index": 100,
-              "url": "https://example.com/renewable-energy-breakthrough/?utm_source=chatgpt.com",
-              "title": "中国科学家在可再生能源领域取得重大突破"
-            },
-            {
-              "type": "url_citation",
-              "start_index": 101,
-              "end_index": 150,
-              "url": "https://example.com/solar-cell-efficiency-record/?utm_source=chatgpt.com",
-              "title": "新型高效太阳能电池转化率创纪录"
-            },
-            {
-              "type": "url_citation",
-              "start_index": 151,
-              "end_index": 200,
-              "url": "https://example.com/clean-energy-cost-reduction/?utm_source=chatgpt.com",
-              "title": "太阳能发电成本有望降低40%"
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "parallel_tool_calls": true,
-  "previous_response_id": null,
-  "reasoning": {
-    "effort": null,
-    "summary": null
-  },
-  "store": true,
-  "temperature": 1.0,
-  "text": {
-    "format": {
-      "type": "text"
-    }
-  },
-  "tool_choice": "auto",
-  "tools": [
-    {
-      "type": "web_search_preview",
-      "domains": [],
-      "search_context_size": "medium",
-      "user_location": {
-        "type": "approximate",
-        "city": null,
-        "country": "US",
-        "region": null,
-        "timezone": null
-      }
-    }
-  ],
-  "top_p": 1.0,
-  "truncation": "disabled",
-  "usage": {
-    "input_tokens": 328,
-    "input_tokens_details": {
-      "cached_tokens": 0
-    },
-    "output_tokens": 356,
-    "output_tokens_details": {
-      "reasoning_tokens": 0
-    },
-    "total_tokens": 684
-  },
-  "user": null,
-  "metadata": {}
-}
-```
+## 事件参考
 
-### 文件搜索工具
+### 通用请求头
 
-```bash
-curl https://api.llmhub.com.cn/v1/responses \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $LLM_Hub_API_KEY" \
-  -d '{
-    "model": "gpt-4.1",
-    "tools": [{
-      "type": "file_search",
-      "vector_store_ids": ["vs_1234567890"],
-      "max_num_results": 20
-    }],
-    "input": "古代棕龙有哪些特性和属性?"
-  }'
-```
+所有事件都需要包含以下请求头:
 
-**响应示例:**
+| 请求头 | 类型 | 说明 | 示例值 |
+|--------|------|------|---------|
+| Authorization | 字符串 | 认证令牌 | Bearer $LLM_Hub_API_KEY |
+| OpenAI-Beta | 字符串 | API 版本 | realtime=v1 |
 
-```json
-{
-  "id": "resp_67ccf4c55fc48190b71bd0463ad3306d09504fb6872380d7",
-  "object": "response",
-  "created_at": 1741485253,
-  "status": "completed",
-  "error": null,
-  "incomplete_details": null,
-  "instructions": null,
-  "max_output_tokens": null,
-  "model": "gpt-4.1",
-  "output": [
-    {
-      "type": "file_search_call",
-      "id": "fs_67ccf4c63cd08190887ef6464ba5681609504fb6872380d7",
-      "status": "completed",
-      "queries": [
-        "古代棕龙的特性和属性"
-      ],
-      "results": null
-    },
-    {
-      "type": "message",
-      "id": "msg_67ccf4c93e5c81909d595b369351a9d309504fb6872380d7",
-      "status": "completed",
-      "role": "assistant",
-      "content": [
-        {
-          "type": "output_text",
-          "text": "根据资料，古代棕龙具有以下特性和属性：\n\n1. 物理特征：古代棕龙体型庞大，体长可达25-30米，翼展约35米。它们的鳞片呈深棕色至铜色，随着年龄增长会变得更加暗沉。头部有特征性的双角和脊刺，下颚强壮，适合撕裂猎物。\n\n2. 能力：它们能喷吐强力的酸液，对目标造成严重腐蚀伤害。古代棕龙还拥有出色的掘地能力，常在沙漠或山地挖掘复杂的巢穴系统。\n\n3. 智力：被认为是龙族中最为狡猾和有耐心的品种，智力极高，精通多种语言，并具有复杂的战术思维。\n\n4. 栖息地：主要栖息在干旱的山地和沙漠地区，喜欢炎热干燥的环境。\n\n5. 宝藏：古代棕龙以其庞大的宝藏闻名，特别喜爱收集铜币、红宝石和火焰魔法物品。\n\n6. 寿命：是所有龙种中寿命最长的之一，可活2000-2500年，随着年龄增长其力量和魔法能力也会增强。\n\n7. 性格：极度领地意识强，性格暴躁易怒，对侵入者毫不留情，但也以其罕见的耐心著称，能为复仇等待几个世纪。",
-          "annotations": [
-            {
-              "type": "file_citation",
-              "index": 80,
-              "file_id": "file-4wDz5b167pAf72nx1h9eiN",
-              "filename": "dragons.pdf"
-            },
-            {
-              "type": "file_citation",
-              "index": 233,
-              "file_id": "file-4wDz5b167pAf72nx1h9eiN",
-              "filename": "dragons.pdf"
-            },
-            {
-              "type": "file_citation",
-              "index": 345,
-              "file_id": "file-4wDz5b167pAf72nx1h9eiN",
-              "filename": "dragons.pdf"
-            },
-            {
-              "type": "file_citation",
-              "index": 420,
-              "file_id": "file-4wDz5b167pAf72nx1h9eiN",
-              "filename": "dragons.pdf"
-            },
-            {
-              "type": "file_citation",
-              "index": 520,
-              "file_id": "file-4wDz5b167pAf72nx1h9eiN",
-              "filename": "dragons.pdf"
-            },
-            {
-              "type": "file_citation",
-              "index": 580,
-              "file_id": "file-4wDz5b167pAf72nx1h9eiN",
-              "filename": "dragons.pdf"
-            },
-            {
-              "type": "file_citation",
-              "index": 655,
-              "file_id": "file-4wDz5b167pAf72nx1h9eiN",
-              "filename": "dragons.pdf"
-            },
-            {
-              "type": "file_citation",
-              "index": 781,
-              "file_id": "file-4wDz5b167pAf72nx1h9eiN",
-              "filename": "dragons.pdf"
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "parallel_tool_calls": true,
-  "previous_response_id": null,
-  "reasoning": {
-    "effort": null,
-    "summary": null
-  },
-  "store": true,
-  "temperature": 1.0,
-  "text": {
-    "format": {
-      "type": "text"
-    }
-  },
-  "tool_choice": "auto",
-  "tools": [
-    {
-      "type": "file_search",
-      "filters": null,
-      "max_num_results": 20,
-      "ranking_options": {
-        "ranker": "auto",
-        "score_threshold": 0.0
-      },
-      "vector_store_ids": [
-        "vs_1234567890"
-      ]
-    }
-  ],
-  "top_p": 1.0,
-  "truncation": "disabled",
-  "usage": {
-    "input_tokens": 18307,
-    "input_tokens_details": {
-      "cached_tokens": 0
-    },
-    "output_tokens": 348,
-    "output_tokens_details": {
-      "reasoning_tokens": 0
-    },
-    "total_tokens": 18655
-  },
-  "user": null,
-  "metadata": {}
-}
-```
+### 客户端事件
 
-### 流式响应
+#### session.update
 
-```bash
-curl https://api.llmhub.com.cn/v1/responses \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $LLM_Hub_API_KEY" \
-  -d '{
-    "model": "gpt-4.1",
-    "instructions": "你是一个有帮助的助手。",
-    "input": "你好！",
-    "stream": true
-  }'
-```
+更新会话的默认配置。
 
-**流式响应示例:**
+| 参数 | 类型 | 必需 | 说明 | 示例值/可选值 |
+|------|------|------|------|---------------|
+| event_id | 字符串 | 否 | 客户端生成的事件标识符 | event_123 |
+| type | 字符串 | 否 | 事件类型 | session.update |
+| modalities | 字符串数组 | 否 | 模型可以响应的模态类型 | ["text", "audio"] |
+| instructions | 字符串 | 否 | 预置到模型调用前的系统指令 | "Your knowledge cutoff is 2023-10..." |
+| voice | 字符串 | 否 | 模型使用的语音类型 | alloy、echo、shimmer |
+| input_audio_format | 字符串 | 否 | 输入音频格式 | pcm16、g711_ulaw、g711_alaw |
+| output_audio_format | 字符串 | 否 | 输出音频格式 | pcm16、g711_ulaw、g711_alaw |
+| input_audio_transcription.model | 字符串 | 否 | 用于转写的模型 | whisper-1 |
+| turn_detection.type | 字符串 | 否 | 语音检测类型 | server_vad |
+| turn_detection.threshold | 数字 | 否 | VAD 激活阈值(0.0-1.0) | 0.8 |
+| turn_detection.prefix_padding_ms | 整数 | 否 | 语音开始前包含的音频时长 | 500 |
+| turn_detection.silence_duration_ms | 整数 | 否 | 检测语音停止的静音持续时间 | 1000 |
+| tools | 数组 | 否 | 模型可用的工具列表 | [] |
+| tool_choice | 字符串 | 否 | 模型选择工具的方式 | auto/none/required |
+| temperature | 数字 | 否 | 模型采样温度 | 0.8 |
+| max_output_tokens | 字符串/整数 | 否 | 单次响应最大token数 | "inf"/4096 |
 
-```
-event: response.created
-data: {"type":"response.created","response":{"id":"resp_67c9fdcecf488190bdd9a0409de3a1ec07b8b0ad4e5eb654","object":"response","created_at":1741290958,"status":"in_progress","error":null,"incomplete_details":null,"instructions":"你是一个有帮助的助手。","max_output_tokens":null,"model":"gpt-4.1-2025-04-14","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"summary":null},"store":true,"temperature":1.0,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+#### input_audio_buffer.append
 
-event: response.in_progress
-data: {"type":"response.in_progress","response":{"id":"resp_67c9fdcecf488190bdd9a0409de3a1ec07b8b0ad4e5eb654","object":"response","created_at":1741290958,"status":"in_progress","error":null,"incomplete_details":null,"instructions":"你是一个有帮助的助手。","max_output_tokens":null,"model":"gpt-4.1-2025-04-14","output":[],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"summary":null},"store":true,"temperature":1.0,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"truncation":"disabled","usage":null,"user":null,"metadata":{}}}
+向输入音频缓冲区追加音频数据。
 
-event: response.output_item.added
-data: {"type":"response.output_item.added","output_index":0,"item":{"id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","type":"message","status":"in_progress","role":"assistant","content":[]}}
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 客户端生成的事件标识符 | event_456 |
+| type | 字符串 | 否 | 事件类型 | input_audio_buffer.append |
+| audio | 字符串 | 否 | Base64编码的音频数据 | Base64EncodedAudioData |
 
-event: response.content_part.added
-data: {"type":"response.content_part.added","item_id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","output_index":0,"content_index":0,"part":{"type":"output_text","text":"","annotations":[]}}
+#### input_audio_buffer.commit
 
-event: response.output_text.delta
-data: {"type":"response.output_text.delta","item_id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","output_index":0,"content_index":0,"delta":"你好"}
+将缓冲区中的音频数据提交为用户消息。
 
-event: response.output_text.delta
-data: {"type":"response.output_text.delta","item_id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","output_index":0,"content_index":0,"delta":"！"}
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 客户端生成的事件标识符 | event_789 |
+| type | 字符串 | 否 | 事件类型 | input_audio_buffer.commit |
 
-event: response.output_text.delta
-data: {"type":"response.output_text.delta","item_id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","output_index":0,"content_index":0,"delta":" 我"}
+#### input_audio_buffer.clear
 
-event: response.output_text.delta
-data: {"type":"response.output_text.delta","item_id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","output_index":0,"content_index":0,"delta":"能"}
+清空输入音频缓冲区中的所有音频数据。
 
-event: response.output_text.delta
-data: {"type":"response.output_text.delta","item_id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","output_index":0,"content_index":0,"delta":"为"}
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 客户端生成的事件标识符 | event_012 |
+| type | 字符串 | 否 | 事件类型 | input_audio_buffer.clear |
 
-event: response.output_text.delta
-data: {"type":"response.output_text.delta","item_id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","output_index":0,"content_index":0,"delta":"您"}
+#### conversation.item.create
 
-event: response.output_text.delta
-data: {"type":"response.output_text.delta","item_id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","output_index":0,"content_index":0,"delta":"提供"}
+向对话中添加新的对话项。
 
-event: response.output_text.delta
-data: {"type":"response.output_text.delta","item_id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","output_index":0,"content_index":0,"delta":"什么"}
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 客户端生成的事件标识符 | event_345 |
+| type | 字符串 | 否 | 事件类型 | conversation.item.create |
+| previous_item_id | 字符串 | 否 | 新对话项将插入在此ID之后 | null |
+| item.id | 字符串 | 否 | 对话项的唯一标识符 | msg_001 |
+| item.type | 字符串 | 否 | 对话项类型 | message/function_call/function_call_output |
+| item.status | 字符串 | 否 | 对话项状态 | completed/in_progress/incomplete |
+| item.role | 字符串 | 否 | 消息发送者的角色 | user/assistant/system |
+| item.content | 数组 | 否 | 消息内容 | [text/audio/transcript] |
+| item.call_id | 字符串 | 否 | 函数调用的ID | call_001 |
+| item.name | 字符串 | 否 | 被调用的函数名称 | function_name |
+| item.arguments | 字符串 | 否 | 函数调用的参数 | {"param": "value"} |
+| item.output | 字符串 | 否 | 函数调用的输出结果 | {"result": "value"} |
 
-event: response.output_text.delta
-data: {"type":"response.output_text.delta","item_id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","output_index":0,"content_index":0,"delta":"帮助"}
+#### conversation.item.truncate
 
-event: response.output_text.delta
-data: {"type":"response.output_text.delta","item_id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","output_index":0,"content_index":0,"delta":"吗"}
+截断助手消息中的音频内容。
 
-event: response.output_text.delta
-data: {"type":"response.output_text.delta","item_id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","output_index":0,"content_index":0,"delta":"？"}
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 客户端生成的事件标识符 | event_678 |
+| type | 字符串 | 否 | 事件类型 | conversation.item.truncate |
+| item_id | 字符串 | 否 | 要截断的助手消息项的ID | msg_002 |
+| content_index | 整数 | 否 | 要截断的内容部分的索引 | 0 |
+| audio_end_ms | 整数 | 否 | 音频截断的结束时间点 | 1500 |
 
-event: response.output_text.done
-data: {"type":"response.output_text.done","item_id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","output_index":0,"content_index":0,"text":"你好！ 我能为您提供什么帮助吗？"}
+#### conversation.item.delete
 
-event: response.content_part.done
-data: {"type":"response.content_part.done","item_id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","output_index":0,"content_index":0,"part":{"type":"output_text","text":"你好！ 我能为您提供什么帮助吗？","annotations":[]}}
+从对话历史中删除指定的对话项。
 
-event: response.output_item.done
-data: {"type":"response.output_item.done","output_index":0,"item":{"id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","type":"message","status":"completed","role":"assistant","content":[{"type":"output_text","text":"你好！ 我能为您提供什么帮助吗？","annotations":[]}]}}
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 客户端生成的事件标识符 | event_901 |
+| type | 字符串 | 否 | 事件类型 | conversation.item.delete |
+| item_id | 字符串 | 否 | 要删除的对话项的ID | msg_003 |
 
-event: response.completed
-data: {"type":"response.completed","response":{"id":"resp_67c9fdcecf488190bdd9a0409de3a1ec07b8b0ad4e5eb654","object":"response","created_at":1741290958,"status":"completed","error":null,"incomplete_details":null,"instructions":"你是一个有帮助的助手。","max_output_tokens":null,"model":"gpt-4.1-2025-04-14","output":[{"id":"msg_67c9fdcf37fc8190ba82116e33fb28c507b8b0ad4e5eb654","type":"message","status":"completed","role":"assistant","content":[{"type":"output_text","text":"你好！ 我能为您提供什么帮助吗？","annotations":[]}]}],"parallel_tool_calls":true,"previous_response_id":null,"reasoning":{"effort":null,"summary":null},"store":true,"temperature":1.0,"text":{"format":{"type":"text"}},"tool_choice":"auto","tools":[],"top_p":1.0,"truncation":"disabled","usage":{"input_tokens":37,"output_tokens":11,"output_tokens_details":{"reasoning_tokens":0},"total_tokens":48},"user":null,"metadata":{}}}
-```
+#### response.create
+
+触发响应生成。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 客户端生成的事件标识符 | event_234 |
+| type | 字符串 | 否 | 事件类型 | response.create |
+| response.modalities | 字符串数组 | 否 | 响应的模态类型 | ["text", "audio"] |
+| response.instructions | 字符串 | 否 | 给模型的指令 | "Please assist the user." |
+| response.voice | 字符串 | 否 | 模型使用的语音类型 | alloy/echo/shimmer |
+| response.output_audio_format | 字符串 | 否 | 输出音频格式 | pcm16 |
+| response.tools | 数组 | 否 | 模型可用的工具列表 | ["type", "name", "description"] |
+| response.tool_choice | 字符串 | 否 | 模型选择工具的方式 | auto |
+| response.temperature | 数字 | 否 | 采样温度 | 0.7 |
+| response.max_output_tokens | 整数/字符串 | 否 | 最大输出token数 | 150/"inf" |
+
+#### response.cancel
+
+取消正在进行中的响应生成。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 客户端生成的事件标识符 | event_567 |
+| type | 字符串 | 否 | 事件类型 | response.cancel |
+
+### 服务端事件
+
+#### error
+
+当发生错误时返回的事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串数组 | 否 | 服务端事件的唯一标识符 | ["event_890"] |
+| type | 字符串 | 否 | 事件类型 | error |
+| error.type | 字符串 | 否 | 错误类型 | invalid_request_error/server_error |
+| error.code | 字符串 | 否 | 错误代码 | invalid_event |
+| error.message | 字符串 | 否 | 人类可读的错误消息 | "The 'type' field is missing." |
+| error.param | 字符串 | 否 | 与错误相关的参数 | null |
+| error.event_id | 字符串 | 否 | 相关事件的ID | event_567 |
+
+#### conversation.item.input_audio_transcription.completed
+
+当启用输入音频转写功能并且转写成功时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_2122 |
+| type | 字符串 | 否 | 事件类型 | conversation.item.input_audio_transcription.completed |
+| item_id | 字符串 | 否 | 用户消息项的ID | msg_003 |
+| content_index | 整数 | 否 | 包含音频的内容部分的索引 | 0 |
+| transcript | 字符串 | 否 | 转写的文本内容 | "Hello, how are you?" |
+
+#### conversation.item.input_audio_transcription.failed
+
+当配置了输入音频转写功能,但用户消息的转写请求失败时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_2324 |
+| type | 字符串数组 | 否 | 事件类型 | ["conversation.item.input_audio_transcription.failed"] |
+| item_id | 字符串 | 否 | 用户消息项的ID | msg_003 |
+| content_index | 整数 | 否 | 包含音频的内容部分的索引 | 0 |
+| error.type | 字符串 | 否 | 错误类型 | transcription_error |
+| error.code | 字符串 | 否 | 错误代码 | audio_unintelligible |
+| error.message | 字符串 | 否 | 人类可读的错误消息 | "The audio could not be transcribed." |
+| error.param | 字符串 | 否 | 与错误相关的参数 | null |
+
+#### conversation.item.truncated
+
+当客户端截断了之前的助手音频消息项时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_2526 |
+| type | 字符串 | 否 | 事件类型 | conversation.item.truncated |
+| item_id | 字符串 | 否 | 被截断的助手消息项的ID | msg_004 |
+| content_index | 整数 | 否 | 被截断的内容部分的索引 | 0 |
+| audio_end_ms | 整数 | 否 | 音频被截断的时间点(毫秒) | 1500 |
+
+#### conversation.item.deleted
+
+当对话中的某个项目被删除时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_2728 |
+| type | 字符串 | 否 | 事件类型 | conversation.item.deleted |
+| item_id | 字符串 | 否 | 被删除的对话项的ID | msg_005 |
+
+#### input_audio_buffer.committed
+
+当音频缓冲区中的数据被提交时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_1121 |
+| type | 字符串 | 否 | 事件类型 | input_audio_buffer.committed |
+| previous_item_id | 字符串 | 否 | 新对话项将插入在此ID对应的对话项之后 | msg_001 |
+| item_id | 字符串 | 否 | 将要创建的用户消息项的ID | msg_002 |
+
+#### input_audio_buffer.cleared
+
+当客户端清空输入音频缓冲区时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_1314 |
+| type | 字符串 | 否 | 事件类型 | input_audio_buffer.cleared |
+
+#### input_audio_buffer.speech_started
+
+在服务器语音检测模式下，当检测到语音输入时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_1516 |
+| type | 字符串 | 否 | 事件类型 | input_audio_buffer.speech_started |
+| audio_start_ms | 整数 | 否 | 从会话开始到检测到语音的毫秒数 | 1000 |
+| item_id | 字符串 | 否 | 语音停止时将创建的用户消息项的ID | msg_003 |
+
+#### input_audio_buffer.speech_stopped
+
+在服务器语音检测模式下，当检测到语音输入停止时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_1718 |
+| type | 字符串 | 否 | 事件类型 | input_audio_buffer.speech_stopped |
+| audio_start_ms | 整数 | 否 | 从会话开始到检测到语音停止的毫秒数 | 2000 |
+| item_id | 字符串 | 否 | 将要创建的用户消息项的ID | msg_003 |
+
+#### response.created
+
+当创建新的响应时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_2930 |
+| type | 字符串 | 否 | 事件类型 | response.created |
+| response.id | 字符串 | 否 | 响应的唯一标识符 | resp_001 |
+| response.object | 字符串 | 否 | 对象类型 | realtime.response |
+| response.status | 字符串 | 否 | 响应的状态 | in_progress |
+| response.status_details | 对象 | 否 | 状态的附加详细信息 | null |
+| response.output | 字符串数组 | 否 | 响应生成的输出项列表 | ["[]"] |
+| response.usage | 对象 | 否 | 响应的使用统计信息 | null |
+
+#### response.done
+
+当响应完成流式传输时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_3132 |
+| type | 字符串 | 否 | 事件类型 | response.done |
+| response.id | 字符串 | 否 | 响应的唯一标识符 | resp_001 |
+| response.object | 字符串 | 否 | 对象类型 | realtime.response |
+| response.status | 字符串 | 否 | 响应的最终状态 | completed/cancelled/failed/incomplete |
+| response.status_details | 对象 | 否 | 状态的附加详细信息 | null |
+| response.output | 字符串数组 | 否 | 响应生成的输出项列表 | ["[...]"] |
+| response.usage.total_tokens | 整数 | 否 | 总token数 | 50 |
+| response.usage.input_tokens | 整数 | 否 | 输入token数 | 20 |
+| response.usage.output_tokens | 整数 | 否 | 输出token数 | 30 |
+
+#### response.output_item.added
+
+当响应生成过程中创建新的输出项时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_3334 |
+| type | 字符串 | 否 | 事件类型 | response.output_item.added |
+| response_id | 字符串 | 否 | 输出项所属的响应ID | resp_001 |
+| output_index | 字符串 | 否 | 输出项在响应中的索引 | 0 |
+| item.id | 字符串 | 否 | 输出项的唯一标识符 | msg_007 |
+| item.object | 字符串 | 否 | 对象类型 | realtime.item |
+| item.type | 字符串 | 否 | 输出项类型 | message/function_call/function_call_output |
+| item.status | 字符串 | 否 | 输出项状态 | in_progress/completed |
+| item.role | 字符串 | 否 | 与输出项关联的角色 | assistant |
+| item.content | 数组 | 否 | 输出项的内容 | ["type", "text", "audio", "transcript"] |
+
+#### response.output_item.done
+
+当输出项完成流式传输时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_3536 |
+| type | 字符串 | 否 | 事件类型 | response.output_item.done |
+| response_id | 字符串 | 否 | 输出项所属的响应ID | resp_001 |
+| output_index | 字符串 | 否 | 输出项在响应中的索引 | 0 |
+| item.id | 字符串 | 否 | 输出项的唯一标识符 | msg_007 |
+| item.object | 字符串 | 否 | 对象类型 | realtime.item |
+| item.type | 字符串 | 否 | 输出项类型 | message/function_call/function_call_output |
+| item.status | 字符串 | 否 | 输出项的最终状态 | completed/incomplete |
+| item.role | 字符串 | 否 | 与输出项关联的角色 | assistant |
+| item.content | 数组 | 否 | 输出项的内容 | ["type", "text", "audio", "transcript"] |
+
+#### response.content_part.added
+
+当响应生成过程中向助手消息项添加新的内容部分时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_3738 |
+| type | 字符串 | 否 | 事件类型 | response.content_part.added |
+| response_id | 字符串 | 否 | 响应的ID | resp_001 |
+| item_id | 字符串 | 否 | 添加内容部分的消息项ID | msg_007 |
+| output_index | 整数 | 否 | 输出项在响应中的索引 | 0 |
+| content_index | 整数 | 否 | 内容部分在消息项内容数组中的索引 | 0 |
+| part.type | 字符串 | 否 | 内容类型 | text/audio |
+| part.text | 字符串 | 否 | 文本内容 | "Hello" |
+| part.audio | 字符串 | 否 | Base64编码的音频数据 | "base64_encoded_audio_data" |
+| part.transcript | 字符串 | 否 | 音频的转写文本 | "Hello" |
+
+#### response.content_part.done
+
+当助手消息项中的内容部分完成流式传输时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_3940 |
+| type | 字符串 | 否 | 事件类型 | response.content_part.done |
+| response_id | 字符串 | 否 | 响应的ID | resp_001 |
+| item_id | 字符串 | 否 | 添加内容部分的消息项ID | msg_007 |
+| output_index | 整数 | 否 | 输出项在响应中的索引 | 0 |
+| content_index | 整数 | 否 | 内容部分在消息项内容数组中的索引 | 0 |
+| part.type | 字符串 | 否 | 内容类型 | text/audio |
+| part.text | 字符串 | 否 | 文本内容 | "Hello" |
+| part.audio | 字符串 | 否 | Base64编码的音频数据 | "base64_encoded_audio_data" |
+| part.transcript | 字符串 | 否 | 音频的转写文本 | "Hello" |
+
+#### response.text.delta
+
+当"text"类型内容部分的文本值更新时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_4142 |
+| type | 字符串 | 否 | 事件类型 | response.text.delta |
+| response_id | 字符串 | 否 | 响应的ID | resp_001 |
+| item_id | 字符串 | 否 | 消息项的ID | msg_007 |
+| output_index | 整数 | 否 | 输出项在响应中的索引 | 0 |
+| content_index | 整数 | 否 | 内容部分在消息项内容数组中的索引 | 0 |
+| delta | 字符串 | 否 | 文本增量更新内容 | "Sure, I can h" |
+
+#### response.text.done
+
+当"text"类型内容部分的文本流式传输完成时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_4344 |
+| type | 字符串 | 否 | 事件类型 | response.text.done |
+| response_id | 字符串 | 否 | 响应的ID | resp_001 |
+| item_id | 字符串 | 否 | 消息项的ID | msg_007 |
+| output_index | 整数 | 否 | 输出项在响应中的索引 | 0 |
+| content_index | 整数 | 否 | 内容部分在消息项内容数组中的索引 | 0 |
+| delta | 字符串 | 否 | 最终的完整文本内容 | "Sure, I can help with that." |
+
+#### response.audio_transcript.delta
+
+当模型生成的音频输出转写内容更新时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_4546 |
+| type | 字符串 | 否 | 事件类型 | response.audio_transcript.delta |
+| response_id | 字符串 | 否 | 响应的ID | resp_001 |
+| item_id | 字符串 | 否 | 消息项的ID | msg_008 |
+| output_index | 整数 | 否 | 输出项在响应中的索引 | 0 |
+| content_index | 整数 | 否 | 内容部分在消息项内容数组中的索引 | 0 |
+| delta | 字符串 | 否 | 转写文本的增量更新内容 | "Hello, how can I a" |
+
+#### response.audio_transcript.done
+
+当模型生成的音频输出转写完成流式传输时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_4748 |
+| type | 字符串 | 否 | 事件类型 | response.audio_transcript.done |
+| response_id | 字符串 | 否 | 响应的ID | resp_001 |
+| item_id | 字符串 | 否 | 消息项的ID | msg_008 |
+| output_index | 整数 | 否 | 输出项在响应中的索引 | 0 |
+| content_index | 整数 | 否 | 内容部分在消息项内容数组中的索引 | 0 |
+| transcript | 字符串 | 否 | 音频的最终完整转写文本 | "Hello, how can I assist you today?" |
+
+#### response.audio.delta
+
+当模型生成的音频内容更新时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_4950 |
+| type | 字符串 | 否 | 事件类型 | response.audio.delta |
+| response_id | 字符串 | 否 | 响应的ID | resp_001 |
+| item_id | 字符串 | 否 | 消息项的ID | msg_008 |
+| output_index | 整数 | 否 | 输出项在响应中的索引 | 0 |
+| content_index | 整数 | 否 | 内容部分在消息项内容数组中的索引 | 0 |
+| delta | 字符串 | 否 | Base64编码的音频数据增量 | "Base64EncodedAudioDelta" |
+
+#### response.audio.done
+
+当模型生成的音频完成时返回此事件。
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_5152 |
+| type | 字符串 | 否 | 事件类型 | response.audio.done |
+| response_id | 字符串 | 否 | 响应的ID | resp_001 |
+| item_id | 字符串 | 否 | 消息项的ID | msg_008 |
+| output_index | 整数 | 否 | 输出项在响应中的索引 | 0 |
+| content_index | 整数 | 否 | 内容部分在消息项内容数组中的索引 | 0 |
 
 ### 函数调用
 
-```bash
-curl https://api.llmhub.com.cn/v1/responses \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $LLM_Hub_API_KEY" \
-  -d '{
-    "model": "gpt-4.1",
-    "input": "波士顿今天的天气如何？",
-    "tools": [
-      {
-        "type": "function",
-        "name": "get_current_weather",
-        "description": "获取指定位置的当前天气",
-        "parameters": {
-          "type": "object",
-          "properties": {
-            "location": {
-              "type": "string",
-              "description": "城市和州，例如 San Francisco, CA"
-            },
-            "unit": {
-              "type": "string",
-              "enum": ["celsius", "fahrenheit"]
-            }
-          },
-          "required": ["location", "unit"]
-        }
-      }
-    ],
-    "tool_choice": "auto"
-  }'
-```
-
-**响应示例:**
-
-```json
-{
-  "id": "resp_67ca09c5efe0819096d0511c92b8c890096610f474011cc0",
-  "object": "response",
-  "created_at": 1741294021,
-  "status": "completed",
-  "error": null,
-  "incomplete_details": null,
-  "instructions": null,
-  "max_output_tokens": null,
-  "model": "gpt-4.1-2025-04-14",
-  "output": [
-    {
-      "type": "function_call",
-      "id": "fc_67ca09c6bedc8190a7abfec07b1a1332096610f474011cc0",
-      "call_id": "call_unLAR8MvFNptuiZK6K6HCy5k",
-      "name": "get_current_weather",
-      "arguments": "{\"location\":\"波士顿, MA\",\"unit\":\"celsius\"}",
-      "status": "completed"
-    }
-  ],
-  "parallel_tool_calls": true,
-  "previous_response_id": null,
-  "reasoning": {
-    "effort": null,
-    "summary": null
-  },
-  "store": true,
-  "temperature": 1.0,
-  "text": {
-    "format": {
-      "type": "text"
-    }
-  },
-  "tool_choice": "auto",
-  "tools": [
-    {
-      "type": "function",
-      "description": "获取指定位置的当前天气",
-      "name": "get_current_weather",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "location": {
-            "type": "string",
-            "description": "城市和州，例如 San Francisco, CA"
-          },
-          "unit": {
-            "type": "string",
-            "enum": [
-              "celsius",
-              "fahrenheit"
-            ]
-          }
-        },
-        "required": [
-          "location",
-          "unit"
-        ]
-      },
-      "strict": true
-    }
-  ],
-  "top_p": 1.0,
-  "truncation": "disabled",
-  "usage": {
-    "input_tokens": 291,
-    "output_tokens": 23,
-    "output_tokens_details": {
-      "reasoning_tokens": 0
-    },
-    "total_tokens": 314
-  },
-  "user": null,
-  "metadata": {}
-}
-```
-
-### 推理能力
-
-```bash
-curl https://api.llmhub.com.cn/v1/responses \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $LLM_Hub_API_KEY" \
-  -d '{
-    "model": "o3-mini",
-    "input": "一只啄木鸟能啄多少木头?",
-    "reasoning": {
-      "effort": "high"
-    }
-  }'
-```
-
-**响应示例:**
-
-```json
-{
-  "id": "resp_67ccd7eca01881908ff0b5146584e408072912b2993db808",
-  "object": "response",
-  "created_at": 1741477868,
-  "status": "completed",
-  "error": null,
-  "incomplete_details": null,
-  "instructions": null,
-  "max_output_tokens": null,
-  "model": "o1-2024-12-17",
-  "output": [
-    {
-      "type": "message",
-      "id": "msg_67ccd7f7b5848190a6f3e95d809f6b44072912b2993db808",
-      "status": "completed",
-      "role": "assistant",
-      "content": [
-        {
-          "type": "output_text",
-          "text": "这是一个源自英文绕口令"How much wood would a woodchuck chuck if a woodchuck could chuck wood"的问题。在现实中，啄木鸟(woodpecker)和土拨鼠(woodchuck)是不同的动物，而且土拨鼠实际上并不"啄(chuck)"木头。\n\n从科学角度看，啄木鸟每天确实会啄树木以寻找食物、建造巢穴或进行通讯。一只啄木鸟平均每天可能啄树约8000-12000次，视物种和具体目的而定。如果我们将这转换为木材量，假设每次啄击移除约0.1-0.2立方厘米的木材，那么一只啄木鸟理论上每天可能移除约800-2400立方厘米的木材。\n\n然而，啄木鸟主要是为了觅食和筑巢而啄木，而不是单纯地移除木材，所以这个计算只是一个有趣的理论估算。",
-          "annotations": []
-        }
-      ]
-    }
-  ],
-  "parallel_tool_calls": true,
-  "previous_response_id": null,
-  "reasoning": {
-    "effort": "high",
-    "summary": null
-  },
-  "store": true,
-  "temperature": 1.0,
-  "text": {
-    "format": {
-      "type": "text"
-    }
-  },
-  "tool_choice": "auto",
-  "tools": [],
-  "top_p": 1.0,
-  "truncation": "disabled",
-  "usage": {
-    "input_tokens": 81,
-    "input_tokens_details": {
-      "cached_tokens": 0
-    },
-    "output_tokens": 1035,
-    "output_tokens_details": {
-      "reasoning_tokens": 832
-    },
-    "total_tokens": 1116
-  },
-  "user": null,
-  "metadata": {}
-}
-```
-
-## 请求
-
-### 端点
-
-```
-POST /v1/responses
-```
-
-创建模型响应。提供文本或图像输入以生成文本或JSON输出。让模型调用您自己的自定义代码或使用内置工具（如网络搜索或文件搜索）将您自己的数据用作模型响应的输入。
-
-### 鉴权方法
-
-在请求头中包含以下内容进行 API 密钥认证：
-
-```
-Authorization: Bearer $LLM_Hub_API_KEY
-```
-
-其中 `$LLM_Hub_API_KEY` 是您的 API 密钥。
-
-### 请求体参数
-
-#### input
-
-**类型**: 字符串或数组
-**必需**: 是
-
-提供给模型的文本、图像或文件输入，用于生成响应。
-
-##### 可能的类型
-
-| 类型 | 描述 |
-|------|------|
-| 字符串 | 文本输入，相当于具有用户角色的文本输入 |
-| 输入项数组 | 包含不同内容类型的一个或多个输入项列表 |
-
-##### 输入消息对象
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| content | 字符串或数组 | 是 | 提供给模型的文本、图像或音频输入，用于生成响应。也可以包含之前的助手响应 |
-| role | 字符串 | 是 | 输入消息的角色。可选值：`user`、`assistant`、`system` 或 `developer` |
-| type | 字符串 | 否 | 输入消息的类型，始终为 `message` |
-
-##### 内容项类型
-
-###### 文本输入
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| text | 字符串 | 是 | 提供给模型的文本输入 |
-| type | 字符串 | 是 | 输入项的类型，始终为 `input_text` |
-
-###### 图像输入
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| detail | 字符串 | 是 | 要发送给模型的图像的详细级别。可选值：`high`、`low` 或 `auto`。默认为 `auto` |
-| type | 字符串 | 是 | 输入项的类型，始终为 `input_image` |
-| file_id | 字符串 | 否 | 要发送给模型的文件ID |
-| image_url | 字符串 | 否 | 要发送给模型的图像URL。可以是完整的URL或数据URL中的base64编码图像 |
-
-###### 文件输入
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| type | 字符串 | 是 | 输入项的类型，始终为 `input_file` |
-| file_data | 字符串 | 否 | 要发送给模型的文件内容 |
-| file_id | 字符串 | 否 | 要发送给模型的文件ID |
-| filename | 字符串 | 否 | 要发送给模型的文件名 |
-
-##### 输出项类型
-
-###### 输出文本
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| text | 字符串 | 是 | 模型生成的文本输出 |
-| type | 字符串 | 是 | 输出项的类型，始终为 `output_text` |
-| annotations | 数组 | 是 | 文本输出的注释 |
-
-###### 注释类型
-
-文件引用:
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| file_id | 字符串 | 是 | 文件的ID |
-| index | 整数 | 是 | 文件在文件列表中的索引 |
-| type | 字符串 | 是 | 文件引用的类型，始终为 `file_citation` |
-
-URL引用:
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| end_index | 整数 | 是 | URL引用在消息中的最后一个字符的索引 |
-| start_index | 整数 | 是 | URL引用在消息中的第一个字符的索引 |
-| title | 字符串 | 是 | 网络资源的标题 |
-| type | 字符串 | 是 | URL引用的类型，始终为 `url_citation` |
-| url | 字符串 | 是 | 网络资源的URL |
-
-文件路径:
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| file_id | 字符串 | 是 | 文件的ID |
-| index | 整数 | 是 | 文件在文件列表中的索引 |
-| type | 字符串 | 是 | 文件路径的类型，始终为 `file_path` |
-
-###### 拒绝响应
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| refusal | 字符串 | 是 | 模型的拒绝解释 |
-| type | 字符串 | 是 | 拒绝的类型，始终为 `refusal` |
-
-##### 工具调用类型
-
-###### 文件搜索工具调用
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| id | 字符串 | 是 | 文件搜索工具调用的唯一ID |
-| queries | 数组 | 是 | 用于搜索文件的查询 |
-| status | 字符串 | 是 | 文件搜索工具调用的状态。可能值包括：`in_progress`、`searching`、`incomplete` 或 `failed` |
-| type | 字符串 | 是 | 文件搜索工具调用的类型，始终为 `file_search_call` |
-| results | 数组或null | 否 | 文件搜索工具调用的结果 |
-
-###### 网络搜索工具调用
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| id | 字符串 | 是 | 网络搜索工具调用的唯一ID |
-| status | 字符串 | 是 | 网络搜索工具调用的状态 |
-| type | 字符串 | 是 | 网络搜索工具调用的类型，始终为 `web_search_call` |
-
-###### 函数工具调用
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| arguments | 字符串 | 是 | 传递给函数的参数的JSON字符串 |
-| call_id | 字符串 | 是 | 模型生成的函数工具调用的唯一ID |
-| name | 字符串 | 是 | 要运行的函数的名称 |
-| type | 字符串 | 是 | 函数工具调用的类型，始终为 `function_call` |
-| id | 字符串 | 否 | 函数工具调用的唯一ID |
-| status | 字符串 | 否 | 项目的状态。可能值：`in_progress`、`completed`或`incomplete` |
-
-###### 计算机工具调用
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| action | 对象 | 是 | 计算机交互的操作，如点击、拖拽等 |
-| call_id | 字符串 | 是 | 响应工具调用输出时使用的标识符 |
-| id | 字符串 | 是 | 计算机调用的唯一ID |
-| pending_safety_checks | 数组 | 是 | 计算机调用的待处理安全检查 |
-| status | 字符串 | 是 | 项目的状态。可能值：`in_progress`、`completed`或`incomplete` |
-| type | 字符串 | 是 | 计算机调用的类型，始终为 `computer_call` |
-
-计算机操作类型:
-
-| 操作类型 | 描述 |
-|---------|------|
-| click | 鼠标点击操作 |
-| double_click | 鼠标双击操作 |
-| drag | 拖拽操作 |
-| keypress | 按键操作 |
-| move | 鼠标移动操作 |
-| screenshot | 屏幕截图操作 |
-| scroll | 滚动操作 |
-| type | 文本输入操作 |
-| wait | 等待操作 |
-
-###### 计算机工具调用输出
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| call_id | 字符串 | 是 | 产生输出的计算机工具调用的ID |
-| output | 对象 | 是 | 用于计算机使用工具的计算机屏幕截图图像 |
-| type | 字符串 | 是 | 计算机工具调用输出的类型，始终为 `computer_call_output` |
-| acknowledged_safety_checks | 数组 | 否 | API报告的已被开发者确认的安全检查 |
-| id | 字符串 | 否 | 计算机工具调用输出的ID |
-| status | 字符串 | 否 | 输入消息的状态。可能值：`in_progress`、`completed`或`incomplete` |
-
-###### 函数工具调用输出
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| call_id | 字符串 | 是 | 模型生成的函数工具调用的唯一ID |
-| output | 字符串 | 是 | 函数工具调用输出的JSON字符串 |
-| type | 字符串 | 是 | 函数工具调用输出的类型，始终为 `function_call_output` |
-| id | 字符串 | 否 | 函数工具调用输出的唯一ID |
-| status | 字符串 | 否 | 项目的状态。可能值：`in_progress`、`completed`或`incomplete` |
-
-##### 推理相关项
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| id | 字符串 | 是 | 推理内容的唯一标识符 |
-| summary | 数组 | 是 | 推理文本内容 |
-| type | 字符串 | 是 | 对象的类型，始终为 `reasoning` |
-| encrypted_content | 字符串或null | 否 | 推理项的加密内容 - 当使用 `reasoning.encrypted_content` 包含参数生成响应时填充 |
-| status | 字符串 | 否 | 项目的状态。可能值：`in_progress`、`completed`或`incomplete` |
-
-推理摘要:
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| text | 字符串 | 是 | 模型生成响应时使用的推理的简短摘要 |
-| type | 字符串 | 是 | 对象的类型，始终为 `summary_text` |
-
-##### 项目引用
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| id | 字符串 | 是 | 要引用的项目的ID |
-| type | 字符串 | 否 | 要引用的项目类型，始终为 `item_reference` |
-
-#### model
-
-**类型**: 字符串
-**必需**: 是
-
-用于生成响应的模型ID，例如 gpt-4.1 或 o3。OpenAI 提供各种具有不同能力、性能特性和价格点的模型。请参阅模型指南以浏览和比较可用模型。
-
-#### include
-
-**类型**: 数组或null
-**必需**: 否
-
-指定要在模型响应中包含的附加输出数据。当前支持的值包括：
-
-| 值 | 描述 |
-|------|------|
-| `file_search_call.results` | 包含文件搜索工具调用的搜索结果 |
-| `message.input_image.image_url` | 包含输入消息中的图像URL |
-| `computer_call_output.output.image_url` | 包含电脑调用输出中的图像URL |
-| `reasoning.encrypted_content` | 在推理项输出中包含推理标记的加密版本 |
-
-#### instructions
-
-**类型**: 字符串或null
-**必需**: 否
-
-作为模型上下文中的第一项插入系统（或开发者）消息。
-
-当与 `previous_response_id` 一起使用时，前一个响应中的指令不会被带到下一个响应。这使得在新响应中轻松切换系统（开发者）消息变得简单。
-
-#### max_output_tokens
+#### response.function_call_arguments.delta
 
-**类型**: 整数或null
-**必需**: 否
+当模型生成的函数调用参数更新时返回此事件。
 
-可以为响应生成的令牌数量的上限，包括可见输出令牌和推理令牌。
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_5354 |
+| type | 字符串 | 否 | 事件类型 | response.function_call_arguments.delta |
+| response_id | 字符串 | 否 | 响应的ID | resp_002 |
+| item_id | 字符串 | 否 | 消息项的ID | fc_001 |
+| output_index | 整数 | 否 | 输出项在响应中的索引 | 0 |
+| call_id | 字符串 | 否 | 函数调用的ID | call_001 |
+| delta | 字符串 | 否 | JSON格式的函数调用参数增量 | "{\"location\": \"San\"" |
 
-#### metadata
+#### response.function_call_arguments.done
 
-**类型**: 对象
-**必需**: 否
+当模型生成的函数调用参数完成流式传输时返回此事件。
 
-可以附加到对象的16个键值对集合。这对于以结构化格式存储对象的其他信息很有用,并可以通过 API 或仪表板查询对象。
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_5556 |
+| type | 字符串 | 否 | 事件类型 | response.function_call_arguments.done |
+| response_id | 字符串 | 否 | 响应的ID | resp_002 |
+| item_id | 字符串 | 否 | 消息项的ID | fc_001 |
+| output_index | 整数 | 否 | 输出项在响应中的索引 | 0 |
+| call_id | 字符串 | 否 | 函数调用的ID | call_001 |
+| arguments | 字符串 | 否 | 最终的完整函数调用参数(JSON格式) | "{\"location\": \"San Francisco\"}" |
 
-键是最大长度为64个字符的字符串。值是最大长度为512个字符的字符串。
+### 其他状态更新
 
-#### parallel_tool_calls
+#### rate_limits.updated
 
-**类型**: 布尔值或null
-**必需**: 否
-**默认值**: true
+在每个 "response.done" 事件之后触发,用于指示更新后的速率限制。
 
-是否允许模型并行运行工具调用。
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_5758 |
+| type | 字符串 | 否 | 事件类型 | rate_limits.updated |
+| rate_limits | 对象数组 | 否 | 速率限制信息列表 | [{"name": "requests_per_min", "limit": 60, "remaining": 45, "reset_seconds": 35}] |
 
-#### previous_response_id
+#### conversation.created
 
-**类型**: 字符串或null
-**必需**: 否
+当对话创建时返回此事件。
 
-模型的前一个响应的唯一ID。使用此参数创建多轮对话。了解更多关于对话状态。
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_9101 |
+| type | 字符串 | 否 | 事件类型 | conversation.created |
+| conversation | 对象 | 否 | 对话资源对象 | {"id": "conv_001", "object": "realtime.conversation"} |
 
-#### reasoning
+#### conversation.item.created
 
-**类型**: 对象或null
-**必需**: 否
-**仅适用于o系列模型**
+当对话项创建时返回此事件。
 
-推理模型的配置选项。
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_1920 |
+| type | 字符串 | 否 | 事件类型 | conversation.item.created |
+| previous_item_id | 字符串 | 否 | 前一个对话项的ID | msg_002 |
+| item | 对象 | 否 | 对话项对象 | {"id": "msg_003", "object": "realtime.item", "type": "message", "status": "completed", "role": "user", "content": [{"type": "text", "text": "Hello"}]} |
 
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| effort | 字符串或null | 否 | 推理的努力程度，可选值: `low`, `medium`, `high`。默认值为 `medium`。降低推理努力可以加快响应速度并减少响应中用于推理的令牌数 |
-| summary | 字符串或null | 否 | 模型执行的推理摘要。这对于调试和理解模型的推理过程很有用。可选值: `auto`, `concise`, `detailed` |
-| generate_summary | 字符串或null | 否 | **已弃用**: 请使用 `summary` 替代。模型执行的推理摘要。可选值: `auto`, `concise`, `detailed` |
+#### session.created
 
-#### service_tier
+当会话创建时返回此事件。
 
-**类型**: 字符串或null
-**必需**: 否
-**默认值**: auto
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_1234 |
+| type | 字符串 | 否 | 事件类型 | session.created |
+| session | 对象 | 否 | 会话对象 | {"id": "sess_001", "object": "realtime.session", "model": "gpt-4", "modalities": ["text", "audio"]} |
 
-指定用于处理请求的延迟层级。此参数与订阅了 scale tier 服务的客户相关：
+#### session.updated
 
-| 值 | 描述 |
-|------|------|
-| `auto` | 如果项目启用了 Scale tier，系统将使用 scale tier 信用直到用完；如果项目未启用 Scale tier，请求将使用默认服务层级处理，具有较低的正常运行时间 SLA 且无延迟保证 |
-| `default` | 请求将使用默认服务层级处理，具有较低的正常运行时间 SLA 且无延迟保证 |
-| `flex` | 请求将使用 Flex Processing 服务层级处理。了解更多信息请参阅官方文档 |
+当会话更新时返回此事件。
 
-当未设置此参数时，默认行为为 `auto`。
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 否 | 服务端事件的唯一标识符 | event_5678 |
+| type | 字符串 | 否 | 事件类型 | session.updated |
+| session | 对象 | 否 | 更新后的会话对象 | {"id": "sess_001", "object": "realtime.session", "model": "gpt-4", "modalities": ["text", "audio"]} |
 
-当设置此参数时，响应体将包含已使用的 `service_tier`。
+### 速率限制事件参数表
 
-#### store
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| name | 字符串 | 是 | 限制名称 | requests_per_min |
+| limit | 整数 | 是 | 限制值 | 60 |
+| remaining | 整数 | 是 | 剩余可用量 | 45 |
+| reset_seconds | 整数 | 是 | 重置时间(秒) | 35 |
 
-**类型**: 布尔值或null
-**必需**: 否
-**默认值**: true
+### 函数调用参数表
 
-是否存储生成的模型响应以供以后通过 API 检索。
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| type | 字符串 | 是 | 函数类型 | function |
+| name | 字符串 | 是 | 函数名称 | get_weather |
+| description | 字符串 | 否 | 函数描述 | Get the current weather |
+| parameters | 对象 | 是 | 函数参数定义 | {"type": "object", "properties": {...}} |
 
-#### stream
+### 音频格式参数表
 
-**类型**: 布尔值或null
-**必需**: 否
-**默认值**: false
-
-如果设置为 true，模型响应数据将在生成时使用服务器发送的事件流式传输到客户端。
-
-#### temperature
-
-**类型**: 数字或null
-**必需**: 否
-**默认值**: 1
-
-要使用的采样温度，介于 0 和 2 之间。较高的值（如0.8）会使输出更加随机，而较低的值（如0.2）会使其更加集中和确定性。我们通常建议更改此值或 `top_p`，但不要同时更改。
-
-#### text
-
-**类型**: 对象
-**必需**: 否
-
-模型文本响应的配置选项。可以是纯文本或结构化JSON数据。
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| format | 对象 | 否 | 指定模型必须输出的格式 |
-
-配置 `{ "type": "json_schema" }` 启用结构化输出，确保模型将匹配您提供的JSON模式。更多信息请参阅结构化输出指南。
-
-默认格式为 `{ "type": "text" }`，没有其他选项。
-
-**不推荐用于gpt-4o及更新的模型**：
-设置为 `{ "type": "json_object" }` 启用较旧的JSON模式，确保模型生成的消息是有效的JSON。对于支持的模型，首选使用 `json_schema`。
-
-##### 文本格式类型
-
-###### 文本 (Text)
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| type | 字符串 | 是 | 定义的响应格式类型。始终为 `text` |
-
-###### JSON模式 (JSON Schema)
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| name | 字符串 | 是 | 响应格式的名称。必须包含a-z, A-Z, 0-9，或包含下划线和破折号，最大长度为64 |
-| schema | 对象 | 是 | 响应格式的模式，描述为JSON Schema对象 |
-| type | 字符串 | 是 | 定义的响应格式类型。始终为 `json_schema` |
-| description | 字符串 | 否 | 响应格式用途的描述，模型用它来确定如何以该格式响应 |
-| strict | 布尔值或null | 否 | 是否在生成输出时启用严格模式遵循。默认为 `false`。如果设置为 `true`，模型将始终遵循 schema 字段中定义的确切模式。严格模式下只支持JSON Schema的子集 |
-
-###### JSON对象 (JSON Object)
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| type | 字符串 | 是 | 定义的响应格式类型。始终为 `json_object` |
-
-注意：如果没有指示模型这样做的系统或用户消息，模型将不会生成JSON。对于支持的模型，建议使用 `json_schema`。
-
-#### tool_choice
-
-**类型**: 字符串或对象
-**必需**: 否
-
-模型如何选择生成响应时使用的工具（或多个工具）。请参阅 `tools` 参数了解如何指定模型可以调用的工具。
-
-##### 可能的类型
-
-###### 工具选择模式 (Tool choice mode)
-
-**类型**: 字符串
-
-控制模型是否调用工具以及调用哪种工具。
-
-| 值 | 描述 |
-|------|------|
-| `none` | 模型不会调用任何工具，而是生成一条消息 |
-| `auto` | 模型可以在生成消息或调用一个或多个工具之间选择 |
-| `required` | 模型必须调用一个或多个工具 |
-
-###### 托管工具 (Hosted tool)
-
-**类型**: 对象
-
-指示模型应使用内置工具生成响应。
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| type | 字符串 | 是 | 模型应使用的托管工具类型。允许的值有：`file_search`、`web_search_preview`、`computer_use_preview` |
-
-###### 函数工具 (Function tool)
-
-**类型**: 对象
-
-使用此选项强制模型调用特定函数。
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| name | 字符串 | 是 | 要调用的函数名称 |
-| type | 字符串 | 是 | 对于函数调用，类型始终为 `function` |
-
-#### tools
-
-**类型**: 数组
-**必需**: 否
-
-模型在生成响应时可能调用的工具数组。你可以通过设置 `tool_choice` 参数来指定使用哪个工具。
-
-你可以提供给模型的两类工具是：
-
-- **内置工具**：由OpenAI提供的扩展模型能力的工具，如网络搜索或文件搜索。
-- **函数调用（自定义工具）**：由您定义的函数，使模型能够调用您自己的代码。
-
-##### 文件搜索工具 (File search)
-
-**类型**: 对象
-
-一个搜索已上传文件中相关内容的工具。
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| type | 字符串 | 是 | 文件搜索工具的类型，始终为 `file_search` |
-| vector_store_ids | 数组 | 是 | 要搜索的向量存储ID列表 |
-| filters | 对象 | 否 | 要应用的过滤器 |
-| max_num_results | 整数 | 否 | 返回的最大结果数。此数字应介于1到50之间（含）|
-| ranking_options | 对象 | 否 | 搜索排名选项 |
-
-###### 过滤器类型
-
-**比较过滤器 (Comparison Filter)**
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| key | 字符串 | 是 | 要与值进行比较的键 |
-| type | 字符串 | 是 | 指定比较运算符: `eq`, `ne`, `gt`, `gte`, `lt`, `lte`<br />- eq: 等于<br />- ne: 不等于<br />- gt: 大于<br />- gte: 大于等于<br />- lt: 小于<br />- lte: 小于等于 |
-| value | 字符串/数字/布尔值 | 是 | 要与属性键比较的值；支持字符串、数字或布尔类型 |
-
-**复合过滤器 (Compound Filter)**
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| filters | 数组 | 是 | 要组合的过滤器数组。项目可以是比较过滤器或复合过滤器 |
-| type | 字符串 | 是 | 操作类型: `and` 或 `or` |
-
-###### 排名选项
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| ranker | 字符串 | 否 | 文件搜索使用的排名器 |
-| score_threshold | 数字 | 否 | 文件搜索的分数阈值，介于0和1之间的数字。接近1的数字将尝试仅返回最相关的结果，但可能返回更少的结果 |
-
-##### 函数工具 (Function)
-
-**类型**: 对象
-
-定义模型可以选择调用的您自己代码中的函数。
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| type | 字符串 | 是 | 函数工具的类型，始终为 `function` |
-| name | 字符串 | 是 | 要调用的函数名称 |
-| parameters | 对象 | 是 | 描述函数参数的JSON模式对象 |
-| strict | 布尔值 | 是 | 是否强制严格参数验证。默认为 `true` |
-| description | 字符串 | 否 | 函数的描述。模型用它来确定是否调用函数 |
-
-##### 网络搜索工具 (Web search preview)
-
-**类型**: 对象
-
-此工具搜索网络上的相关结果，用于响应。
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| type | 字符串 | 是 | 网络搜索工具的类型。可选值: `web_search_preview` 或 `web_search_preview_2025_03_11` |
-| search_context_size | 字符串 | 否 | 对用于搜索的上下文窗口空间量的高级指导。可选值: `low`, `medium`, `high`。默认为 `medium` |
-| user_location | 对象 | 否 | 用户的位置 |
-| domains | 数组 | 否 | 限制搜索的域名列表 |
-
-###### 用户位置
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| type | 字符串 | 是 | 位置近似类型。始终为 `approximate` |
-| city | 字符串 | 否 | 用户所在城市的自由文本输入，例如 "San Francisco" |
-| country | 字符串 | 否 | 用户的两字母ISO国家代码，例如 "US" |
-| region | 字符串 | 否 | 用户所在区域的自由文本输入，例如 "California" |
-| timezone | 字符串 | 否 | 用户的IANA时区，例如 "America/Los_Angeles" |
-
-##### 计算机使用工具 (Computer use preview)
-
-**类型**: 对象
-
-控制虚拟计算机的工具。
-
-| 属性 | 类型 | 必需 | 描述 |
-|------|------|------|------|
-| type | 字符串 | 是 | 计算机使用工具的类型。始终为 `computer_use_preview` |
-| display_height | 整数 | 是 | 计算机显示器的高度 |
-| display_width | 整数 | 是 | 计算机显示器的宽度 |
-| environment | 字符串 | 是 | 要控制的计算机环境类型 |
-
-#### top_p
-
-**类型**: 数字或null
-**必需**: 否
-**默认值**: 1
-
-一种替代采样温度的方法，称为核采样，其中模型考虑具有 top_p 概率质量的标记结果。因此，0.1 意味着只考虑包含前 10% 概率质量的标记。
-
-我们通常建议更改此值或 `temperature`，但不要同时更改。
-
-#### truncation
-
-**类型**: 字符串或null
-**必需**: 否
-**默认值**: disabled
-
-用于模型响应的截断策略：
-
-| 值 | 描述 |
-|------|------|
-| `auto` | 如果此响应和前一个响应的上下文超过模型的上下文窗口大小，模型将通过删除对话中间的输入项来截断响应以适应上下文窗口 |
-| `disabled` | 如果模型响应将超过模型的上下文窗口大小，请求将失败并显示400错误 |
-
-#### user
-
-**类型**: 字符串
-**必需**: 否
-
-表示最终用户的唯一标识符，可以帮助OpenAI监控和检测滥用行为。
-
-## 响应
-
-返回一个响应对象。
-
-### 成功响应
-
-返回一个响应对象，如果请求被流式传输，则返回响应对象的流式序列。
-
-#### id
-- 类型：字符串
-- 说明：响应的唯一标识符
-
-#### object
-- 类型：字符串
-- 说明：对象类型,值为 "response"
-
-#### created_at
-- 类型：整数
-- 说明：响应创建时间戳
-
-#### status
-- 类型：字符串
-- 说明：响应状态，如 "completed"、"in_progress" 等
-
-#### error
-- 类型：对象或null
-- 说明：如果发生错误，包含错误信息
-
-#### incomplete_details
-- 类型：对象或null
-- 说明：如果响应不完整，包含详细信息
-
-#### instructions
-- 类型：字符串或null
-- 说明：提供给模型的系统指令
-
-#### max_output_tokens
-- 类型：整数或null
-- 说明：最大输出标记数
-
-#### model
-- 类型：字符串
-- 说明：使用的模型名称
-
-#### output
-- 类型：数组
-- 说明：包含生成的回复和工具调用
-- 可能包含:
-- 消息对象（`type`: "message"）
-- 工具使用对象（`type`: "tool_use"）
-
-#### parallel_tool_calls
-- 类型：布尔值
-- 说明：是否启用并行工具调用
-
-#### previous_response_id
-- 类型：字符串或null
-- 说明：前一个响应的ID（用于多轮对话）
-
-#### reasoning
-- 类型：对象
-- 说明：推理相关信息
-
-#### store
-- 类型：布尔值
-- 说明：是否存储此响应
-
-#### temperature
-- 类型：数字
-- 说明：使用的采样温度
-
-#### text
-- 类型：对象
-- 说明：文本输出格式配置
-
-#### tool_choice
-- 类型：字符串
-- 说明：工具选择策略
-
-#### tools
-- 类型：数组
-- 说明：可用工具列表
-
-#### top_p
-- 类型：数字
-- 说明：核采样阈值
-
-#### truncation
-- 类型：字符串
-- 说明：截断策略
-
-#### usage
-- 类型：对象
-- 说明：token 使用统计
-- 属性:
-- `input_tokens`: 输入使用的 token 数
-- `input_tokens_details`: 输入token详细信息
-- `output_tokens`: 输出使用的 token 数
-- `output_tokens_details`: 输出token详细信息
-- `total_tokens`: 总 token 数
-
-#### user
-- 类型：字符串或null
-- 说明：用户标识符
-
-#### metadata
-- 类型：对象
-- 说明：附加的元数据信息
+| 参数 | 类型 | 说明 | 可选值 |
+|------|------|------|--------|
+| sample_rate | 整数 | 采样率 | 8000, 16000, 24000, 44100, 48000 |
+| channels | 整数 | 声道数 | 1 (单声道), 2 (立体声) |
+| bits_per_sample | 整数 | 采样位数 | 16 (pcm16), 8 (g711) |
+| encoding | 字符串 | 编码方式 | pcm16, g711_ulaw, g711_alaw |
+
+### 语音检测参数表
+
+| 参数 | 类型 | 说明 | 默认值 | 范围 |
+|------|------|------|--------|------|
+| threshold | 浮点数 | VAD 激活阈值 | 0.5 | 0.0-1.0 |
+| prefix_padding_ms | 整数 | 语音前缀填充(毫秒) | 500 | 0-5000 |
+| silence_duration_ms | 整数 | 静音检测时长(毫秒) | 1000 | 100-10000 |
+
+### 工具选择参数表
+
+| 参数 | 类型 | 说明 | 可选值 |
+|------|------|------|--------|
+| tool_choice | 字符串 | 工具选择方式 | auto, none, required |
+| tools | 数组 | 可用工具列表 | [{type, name, description, parameters}] |
+
+### 模型配置参数表
+
+| 参数 | 类型 | 说明 | 范围/可选值 | 默认值 |
+|------|------|------|-------------|--------|
+| temperature | 浮点数 | 采样温度 | 0.0-2.0 | 1.0 |
+| max_output_tokens | 整数/字符串 | 最大输出长度 | 1-4096/"inf" | "inf" |
+| modalities | 字符串数组 | 响应模态 | ["text", "audio"] | ["text"] |
+| voice | 字符串 | 语音类型 | alloy, echo, shimmer | alloy |
+
+### 事件通用参数表
+
+| 参数 | 类型 | 必需 | 说明 | 示例值 |
+|------|------|------|------|--------|
+| event_id | 字符串 | 是 | 事件的唯一标识符 | event_123 |
+| type | 字符串 | 是 | 事件类型 | session.update |
+| timestamp | 整数 | 否 | 事件发生的时间戳(毫秒) | 1677649363000 |
+
+### 会话状态参数表
+
+| 参数 | 类型 | 说明 | 可选值 |
+|------|------|------|--------|
+| status | 字符串 | 会话状态 | active, ended, error |
+| error | 对象 | 错误信息 | {"type": "error_type", "message": "error message"} |
+| metadata | 对象 | 会话元数据 | {"client_id": "web", "session_type": "chat"} |
+
+### 对话项状态参数表
+
+| 参数 | 类型 | 说明 | 可选值 |
+|------|------|------|--------|
+| status | 字符串 | 对话项状态 | completed, in_progress, incomplete |
+| role | 字符串 | 发送者角色 | user, assistant, system |
+| type | 字符串 | 对话项类型 | message, function_call, function_call_output |
+
+### 内容类型参数表
+
+| 参数 | 类型 | 说明 | 可选值 |
+|------|------|------|--------|
+| type | 字符串 | 内容类型 | text, audio, transcript |
+| format | 字符串 | 内容格式 | plain, markdown, html |
+| encoding | 字符串 | 编码方式 | utf-8, base64 |
+
+### 响应状态参数表
+
+| 参数 | 类型 | 说明 | 可选值 |
+|------|------|------|--------|
+| status | 字符串 | 响应状态 | completed, cancelled, failed, incomplete |
+| status_details | 对象 | 状态详情 | {"reason": "user_cancelled"} |
+| usage | 对象 | 使用统计 | {"total_tokens": 50, "input_tokens": 20, "output_tokens": 30} |
+
+### 音频转写参数表
+
+| 参数 | 类型 | 说明 | 示例值 |
+|------|------|------|--------|
+| enabled | 布尔值 | 是否启用转写 | true |
+| model | 字符串 | 转写模型 | whisper-1 |
+| language | 字符串 | 转写语言 | en, zh, auto |
+| prompt | 字符串 | 转写提示词 | "Transcript of a conversation" |
+
+### 音频流参数表
+
+| 参数 | 类型 | 说明 | 可选值 |
+|------|------|------|--------|
+| chunk_size | 整数 | 音频块大小(字节) | 1024, 2048, 4096 |
+| latency | 字符串 | 延迟模式 | low, balanced, high |
+| compression | 字符串 | 压缩方式 | none, opus, mp3 |
+
+### WebRTC 配置参数表
+
+| 参数 | 类型 | 说明 | 默认值 |
+|------|------|------|--------|
+| ice_servers | 数组 | ICE 服务器列表 | [{"urls": "stun:stun.l.google.com:19302"}] |
+| audio_constraints | 对象 | 音频约束 | {"echoCancellation": true} |
+| connection_timeout | 整数 | 连接超时(毫秒) | 30000 |
