@@ -42,7 +42,7 @@
                 ]
               },
               {
-                "group": "Embeddings",
+                "group": "Realtime",
                 "pages": [
                   "api-reference/openai-realtime"
                 ]
