@@ -15,7 +15,6 @@
         "groups": [
           {
             "group": "概述",
-            "icon": "compass",
             "pages": [
               "quickstart",
               "faq",
@@ -25,17 +24,21 @@
           },
           {
             "group": "API 参考",
-            "icon": "code",
             "pages": [
               {
                 "group": "Chat API",
-                "icon": "puzzle-piece",
                 "pages": [
                   "api-reference/openai-responses",
                   "api-reference/openai-chat-completions",
                   "api-reference/anthropic-messages",
                   "api-reference/google-generate",
                   "api-reference/deepseek-reasoner"
+                ]
+              },
+              {
+                "group": "Embeddings",
+                "pages": [
+                  "api-reference/openai-embeddings"
                 ]
               }
             ]
@@ -63,7 +66,6 @@
         "groups": [
           {
             "group": "概述",
-            "icon": "compass",
             "pages": [
               "development-tools/claude-code"
             ]
